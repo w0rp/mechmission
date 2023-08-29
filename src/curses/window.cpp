@@ -38,6 +38,14 @@ namespace curses {
         mvwprintw((WINDOW*)_window, y, x, "%s", str);
     }
 
+    void Window::drawf(int x, int y, const char* fmt, ...) {
+        wmove((WINDOW*)_window, y, x);
+        va_list args;
+        va_start(args, fmt);
+        vw_printw((WINDOW*)_window, fmt, args);
+        va_end(args);
+    }
+
     void Window::draw_borders() {
         box((WINDOW*)_window, 0, 0);
     }

@@ -3,7 +3,7 @@
 #include <iostream>
 
 std::ostream& operator<<(std::ostream& os, const Space& s) {
-    os << "Space{color: " << s.color << "}";
+    os << "Space{}";
 
     return os;
 }

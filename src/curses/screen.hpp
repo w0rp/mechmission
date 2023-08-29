@@ -2,7 +2,7 @@
 #define __MECHMISSION_CURSES_SCREEN_H_
 
 namespace curses {
-    enum Input {
+    enum class Input {
         unknown,
         resize,
         quit,

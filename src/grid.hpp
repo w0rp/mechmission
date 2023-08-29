@@ -5,7 +5,6 @@
 #include <ostream>
 
 struct Space {
-    int color;
 };
 
 // Implements outputting a space to a stream.
