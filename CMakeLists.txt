@@ -12,7 +12,7 @@ file(GLOB_RECURSE SOURCES RELATIVE ${CMAKE_SOURCE_DIR} "src/*.cpp")
 
 # Set the C++ standard and compiler options.
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_FLAGS "-O3 -Wall -Wno-visibility -Wno-unused-variable")
+set(CMAKE_CXX_FLAGS "-O3 -Wall -Wno-visibility -Wno-unused-variable -Wimplicit-fallthrough")
 
 # Generate compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
