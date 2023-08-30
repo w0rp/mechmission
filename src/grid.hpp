@@ -11,14 +11,19 @@ struct Space {
 std::ostream& operator<<(std::ostream& os, const Space& s);
 
 class Grid {
+    int _radius;
+    int _rhombus_size;
     std::vector<Space> _spaces;
-    int _size;
 public:
-    Grid(int size);
+    Grid(int radius);
 
-    Space& get(int row, int col);
-    int size() const;
-    const Space& get(int row, int col) const;
+    int radius() const;
+    // Return `true` if coordinates exist inside of the grid.
+    bool has(int x, int y) const;
+    // Get a reference to a space in the grid.
+    Space& get(int x, int y);
+    // Get const a reference to a space in the grid.
+    const Space& get(int x, int y) const;
 };
 
 #endif

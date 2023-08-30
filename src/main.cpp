@@ -5,7 +5,7 @@
 #include <ncurses.h>
 
 int main(int argc, char** argv) {
-    Grid g{100};
+    Grid g{5};
 
     curses::start_ui();
     curses::BattlefieldWindow window;

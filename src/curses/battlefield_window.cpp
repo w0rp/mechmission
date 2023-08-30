@@ -36,12 +36,7 @@ namespace curses {
                     const int x = grid_x + (i - j) / 2 - offset_x;
                     const int y = grid_y + j - half_height;
 
-                    if (
-                        x >= 0
-                        && x < grid.size()
-                        && y >= 0
-                        && y < grid.size()
-                    ) {
+                    if (grid.has(x, y)) {
                         _field.draw(i, j, '.');
                     }
                 }
@@ -85,26 +80,22 @@ namespace curses {
         _hud.draw_borders();
     }
 
-    inline void _keep_coordinates_inside_grid(int& x, int& y, const Grid& grid) {
-        if (y < 0) {
-            y = 0;
-        } else if (y > grid.size() - 1) {
-            y = grid.size() - 1;
+    bool BattlefieldWindow::set_cursor(const Grid& grid, int x, int y) {
+        if (grid.has(x, y)) {
+            _field_x = x;
+            _field_y = y;
+
+            return true;
         }
 
-        if (x < 0) {
-            x = 0;
-        } else if (x > grid.size() - 1) {
-            x = grid.size() - 1;
-        }
+        return false;
     }
 
     BattlefieldWindowAction BattlefieldWindow::step(const Grid& grid) {
-        _keep_coordinates_inside_grid(_field_x, _field_y, grid);
         _draw_hexes(grid, _field_x, _field_y);
 
         // Draw the coordinates atop the HUD.
-        _hud.drawf(3, 0, "x:%04d,y:%04d", _field_x, _field_y);
+        _hud.drawf(3, 0, "x:%+04d,y:%+04d", _field_x, _field_y);
 
         // The UI and windows need to be refreshed constantly.
         curses::refresh_ui();
@@ -118,16 +109,16 @@ namespace curses {
                 _resize_windows();
                 break;
             case curses::Input::up:
-                --_field_y;
+                set_cursor(grid, _field_x + (abs(_field_y) % 2 == 0), _field_y - 1);
                 break;
             case curses::Input::down:
-                ++_field_y;
+                set_cursor(grid, _field_x - (abs(_field_y) % 2), _field_y + 1);
                 break;
             case curses::Input::left:
-                --_field_x;
+                set_cursor(grid, _field_x - 1, _field_y);
                 break;
             case curses::Input::right:
-                ++_field_x;
+                set_cursor(grid, _field_x + 1, _field_y);
                 break;
             case curses::Input::quit:
                 action = BattlefieldWindowAction::quit;

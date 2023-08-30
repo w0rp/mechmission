@@ -19,10 +19,9 @@ namespace curses {
 
         void _draw_hexes(const Grid& grid, int x, int y);
         void _resize_windows();
-        void _move_up();
-        void _move_down();
     public:
         BattlefieldWindow();
+        bool set_cursor(const Grid& grid, int x, int y);
         BattlefieldWindowAction step(const Grid& grid);
     };
 }
