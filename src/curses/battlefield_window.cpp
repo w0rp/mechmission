@@ -1,8 +1,10 @@
 #include "battlefield_window.hpp"
 
+#include <entt/entity/registry.hpp>
 #include <cmath>
 
 #include "../grid.hpp"
+#include "../components.hpp"
 #include "screen.hpp"
 
 namespace curses {
@@ -11,33 +13,58 @@ namespace curses {
     BattlefieldWindow::BattlefieldWindow():
         _hud(0, 0, HUD_WIDTH, curses::screen_height()),
         _field(HUD_WIDTH, 0, curses::screen_width() - HUD_WIDTH, curses::screen_height()),
-        _field_x(0),
-        _field_y(0)
+        _field_pos(0, 0)
     {
         // Draw initial borders when window is created.
         _hud.draw_borders();
     }
 
+    // Check if there is a Mech at a given point.
+    bool mech_exists_at_point(const entt::registry& registry, Point point) {
+        auto view = registry.view<const Point, const Mech>();
+
+        for(auto [entity, mechPoint, mech]: view.each()) {
+            if (mechPoint == point) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+// Implementation details.
+struct BattlefieldWindow::Impl {
     // Draw hexes like so:
     //
     //  . .
     // . . .
     //  . .
-    void BattlefieldWindow::_draw_hexes(const Grid& grid, int grid_x, int grid_y) {
-        _field.clear();
-        const int width = _field.width();
-        const int height = _field.height();
+    static void _draw_hexes(
+        BattlefieldWindow& window,
+        const entt::registry& registry,
+        const Grid& grid,
+        const Point point
+    ) {
+        window._field.clear();
+        const int width = window._field.width();
+        const int height = window._field.height();
         const int half_height = height / 2;
         const int offset_x = floor((width - height) / 4.0);
 
         for (int i = 0; i < width; ++i) {
             for (int j = 0; j < height; ++j) {
                 if (i % 2 == j % 2) {
-                    const int x = grid_x + (i - j) / 2 - offset_x;
-                    const int y = grid_y + j - half_height;
+                    const Point draw_point(
+                        point.x + (i - j) / 2 - offset_x,
+                        point.y + j - half_height
+                    );
 
-                    if (grid.has(x, y)) {
-                        _field.draw(i, j, '.');
+                    if (grid.has(draw_point.x, draw_point.y)) {
+                        if (mech_exists_at_point(registry, draw_point)) {
+                            window._field.draw(i, j, '%');
+                        } else {
+                            window._field.draw(i, j, '.');
+                        }
                     }
                 }
             }
@@ -63,39 +90,60 @@ namespace curses {
         }
         cursor_found:
 
-        _field.position_cursor(cursor_i, cursor_j);
+        window._field.position_cursor(cursor_i, cursor_j);
     }
 
     // Redraw window borders and such when the terminal is resized.
-    void BattlefieldWindow::_resize_windows() {
+    static void _resize_windows(BattlefieldWindow& window) {
         auto width = curses::screen_width();
         auto height = curses::screen_height();
 
-        _hud.resize(0, 0, HUD_WIDTH, height);
-        _field.resize(HUD_WIDTH, 0, width - 20, height);
+        window._hud.resize(0, 0, HUD_WIDTH, height);
+        window._field.resize(HUD_WIDTH, 0, width - 20, height);
 
         curses::clear_ui();
-        _hud.clear();
-        _field.clear();
-        _hud.draw_borders();
+        window._hud.clear();
+        window._field.clear();
+        window._hud.draw_borders();
     }
 
-    bool BattlefieldWindow::set_cursor(const Grid& grid, int x, int y) {
-        if (grid.has(x, y)) {
-            _field_x = x;
-            _field_y = y;
+    static void _draw_unit_data(
+        BattlefieldWindow& window,
+        const entt::registry& registry
+    ) {
+        auto view = registry.view<const Point, const Mech>();
 
+        for(auto [entity, mechPoint, mech]: view.each()) {
+            if (mechPoint == window._field_pos) {
+                window._hud.drawf(1, 1, "Unit %02d - %03d HP",
+                    mech.number, mech.health);
+
+                return;
+            }
+        }
+    }
+};
+
+    bool BattlefieldWindow::set_cursor(const Grid& grid, const Point p) {
+        if (grid.has(p.x, p.y)) {
+            _field_pos = p;
             return true;
         }
 
         return false;
     }
 
-    BattlefieldWindowAction BattlefieldWindow::step(const Grid& grid) {
-        _draw_hexes(grid, _field_x, _field_y);
+    BattlefieldWindowAction BattlefieldWindow::step(
+        const entt::registry& registry,
+        const Grid& grid
+    ) {
+        Impl::_draw_hexes(*this, registry, grid, _field_pos);
 
         // Draw the coordinates atop the HUD.
-        _hud.drawf(3, 0, "x:%+04d,y:%+04d", _field_x, _field_y);
+        _hud.clear();
+        _hud.draw_borders();
+        _hud.drawf(3, 0, "x:%+04d,y:%+04d", _field_pos.x, _field_pos.y);
+        Impl::_draw_unit_data(*this, registry);
 
         // The UI and windows need to be refreshed constantly.
         curses::refresh_ui();
@@ -106,19 +154,37 @@ namespace curses {
 
         switch (curses::get_input()) {
             case curses::Input::resize:
-                _resize_windows();
+                Impl::_resize_windows(*this);
                 break;
             case curses::Input::up:
-                set_cursor(grid, _field_x + (abs(_field_y) % 2 == 0), _field_y - 1);
+                set_cursor(
+                    grid,
+                    Point(
+                        _field_pos.x + (abs(_field_pos.y) % 2 == 0),
+                        _field_pos.y - 1
+                    )
+                );
                 break;
             case curses::Input::down:
-                set_cursor(grid, _field_x - (abs(_field_y) % 2), _field_y + 1);
+                set_cursor(
+                    grid,
+                    Point(
+                        _field_pos.x - (abs(_field_pos.y) % 2),
+                        _field_pos.y + 1
+                    )
+                );
                 break;
             case curses::Input::left:
-                set_cursor(grid, _field_x - 1, _field_y);
+                set_cursor(
+                    grid,
+                    Point(_field_pos.x - 1, _field_pos.y)
+                );
                 break;
             case curses::Input::right:
-                set_cursor(grid, _field_x + 1, _field_y);
+                set_cursor(
+                    grid,
+                    Point(_field_pos.x + 1, _field_pos.y)
+                );
                 break;
             case curses::Input::quit:
                 action = BattlefieldWindowAction::quit;

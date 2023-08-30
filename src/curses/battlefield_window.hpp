@@ -1,9 +1,13 @@
 #ifndef __MECHMISSION_CURSES_BATTLEFIELD_WINDOW_H_
 #define __MECHMISSION_CURSES_BATTLEFIELD_WINDOW_H_
 
+#include "entt/entity/fwd.hpp"
 #include "window.hpp"
 
 #include "../grid.hpp"
+#include "../components.hpp"
+
+#include <entt/entity/registry.hpp>
 
 namespace curses {
     enum class BattlefieldWindowAction {
@@ -14,15 +18,17 @@ namespace curses {
     class BattlefieldWindow {
         Window _hud;
         Window _field;
-        int _field_x;
-        int _field_y;
+        Point _field_pos;
 
-        void _draw_hexes(const Grid& grid, int x, int y);
-        void _resize_windows();
+        // A composed struct for forward-declaring implementation details.
+        struct Impl;
     public:
         BattlefieldWindow();
-        bool set_cursor(const Grid& grid, int x, int y);
-        BattlefieldWindowAction step(const Grid& grid);
+        bool set_cursor(const Grid& grid, const Point point);
+        BattlefieldWindowAction step(
+            const entt::registry& registry,
+            const Grid& grid
+        );
     };
 }
 
