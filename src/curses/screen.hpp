@@ -10,6 +10,7 @@ namespace curses {
         down,
         left,
         right,
+        space,
     };
 
     void start_ui();

@@ -12,7 +12,8 @@
 namespace curses {
     enum class BattlefieldWindowAction {
         none,
-        quit
+        quit,
+        select
     };
 
     class BattlefieldWindow {
@@ -24,6 +25,7 @@ namespace curses {
         struct Impl;
     public:
         BattlefieldWindow();
+        Point cursor() const;
         bool set_cursor(const Grid& grid, const Point point);
         BattlefieldWindowAction step(
             const entt::registry& registry,

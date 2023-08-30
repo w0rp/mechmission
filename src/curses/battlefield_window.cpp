@@ -111,9 +111,14 @@ struct BattlefieldWindow::Impl {
         BattlefieldWindow& window,
         const entt::registry& registry
     ) {
+        auto selected = registry.view<PlayerSelected>();
         auto view = registry.view<const Point, const Mech>();
 
         for(auto [entity, mechPoint, mech]: view.each()) {
+            if (selected.contains(entity)) {
+                window._hud.drawf(1, 2, "SELECTED: %d", mech.number);
+            }
+
             if (mechPoint == window._field_pos) {
                 window._hud.drawf(1, 1, "Unit %02d - %03d HP",
                     mech.number, mech.health);
@@ -123,6 +128,10 @@ struct BattlefieldWindow::Impl {
         }
     }
 };
+
+    Point BattlefieldWindow::cursor() const {
+        return _field_pos;
+    }
 
     bool BattlefieldWindow::set_cursor(const Grid& grid, const Point p) {
         if (grid.has(p.x, p.y)) {
@@ -185,6 +194,9 @@ struct BattlefieldWindow::Impl {
                     grid,
                     Point(_field_pos.x + 1, _field_pos.y)
                 );
+                break;
+            case curses::Input::space:
+                action = BattlefieldWindowAction::select;
                 break;
             case curses::Input::quit:
                 action = BattlefieldWindowAction::quit;

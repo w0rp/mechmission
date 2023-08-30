@@ -46,6 +46,8 @@ namespace curses {
                 return Input::left;
             case KEY_RIGHT:
                 return Input::right;
+            case ' ':
+                return Input::space;
             default:
                 return Input::unknown;
         }
