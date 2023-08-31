@@ -1,3 +1,0 @@
-struct Mech {
-    int health;
-};
