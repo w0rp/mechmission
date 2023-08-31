@@ -1,9 +1,13 @@
 #ifndef __MECHMISSION_COMPONENTS_H_
 #define __MECHMISSION_COMPONENTS_H_
 
+#include <compare>
+
 struct Point {
     int x;
     int y;
+
+    std::strong_ordering operator<=> (const Point&) const = default;
 };
 
 struct Mech {
@@ -17,11 +21,5 @@ struct PlayerControlled {};
 
 // A component tracking units a player has selected.
 struct PlayerSelected {};
-
-// Compute if two points are equal.
-bool operator==(const Point& p1, const Point& p2);
-
-// Compute the distance between two points.
-double distance(const Point& p1, const Point& p2);
 
 #endif

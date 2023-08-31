@@ -5,6 +5,7 @@
 
 #include "../grid.hpp"
 #include "../components.hpp"
+#include "../pathing.hpp"
 #include "screen.hpp"
 
 namespace curses {
@@ -34,6 +35,20 @@ namespace curses {
 
 // Implementation details.
 struct BattlefieldWindow::Impl {
+    static std::set<Point> _get_path_to_draw(
+        BattlefieldWindow& window,
+        const entt::registry& registry,
+        const Grid& grid
+    ) {
+        auto selected = registry.view<const Point, PlayerSelected>();
+
+        for(auto [entity, point]: selected.each()) {
+            return a_star_movement(registry, grid, point, window._field_pos);
+        }
+
+        return std::set<Point>();
+    }
+
     // Draw hexes like so:
     //
     //  . .
@@ -43,6 +58,7 @@ struct BattlefieldWindow::Impl {
         BattlefieldWindow& window,
         const entt::registry& registry,
         const Grid& grid,
+        const std::set<Point>& path,
         const Point point
     ) {
         window._field.clear();
@@ -62,6 +78,8 @@ struct BattlefieldWindow::Impl {
                     if (grid.has(draw_point.x, draw_point.y)) {
                         if (mech_exists_at_point(registry, draw_point)) {
                             window._field.draw(i, j, '%');
+                        } else if (path.contains(draw_point)) {
+                            window._field.draw(i, j, 'X');
                         } else {
                             window._field.draw(i, j, '.');
                         }
@@ -111,19 +129,19 @@ struct BattlefieldWindow::Impl {
         BattlefieldWindow& window,
         const entt::registry& registry
     ) {
-        auto selected = registry.view<PlayerSelected>();
+        auto selected = registry.view<const Mech, PlayerSelected>();
         auto view = registry.view<const Point, const Mech>();
 
-        for(auto [entity, mechPoint, mech]: view.each()) {
-            if (selected.contains(entity)) {
-                window._hud.drawf(1, 2, "SELECTED: %d", mech.number);
-            }
+        for(auto [entity, mech]: selected.each()) {
+            window._hud.drawf(1, 2, "SELECTED: %d", mech.number);
+        }
 
+        for(auto [entity, mechPoint, mech]: view.each()) {
             if (mechPoint == window._field_pos) {
                 window._hud.drawf(1, 1, "Unit %02d - %03d HP",
                     mech.number, mech.health);
 
-                return;
+                break;
             }
         }
     }
@@ -146,7 +164,13 @@ struct BattlefieldWindow::Impl {
         const entt::registry& registry,
         const Grid& grid
     ) {
-        Impl::_draw_hexes(*this, registry, grid, _field_pos);
+        Impl::_draw_hexes(
+            *this,
+            registry,
+            grid,
+            Impl::_get_path_to_draw(*this, registry, grid),
+            _field_pos
+        );
 
         // Draw the coordinates atop the HUD.
         _hud.clear();

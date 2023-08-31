@@ -1,4 +1,3 @@
-#include "entt/entity/fwd.hpp"
 #include "grid.hpp"
 #include "components.hpp"
 #include "curses/screen.hpp"
@@ -20,10 +19,7 @@ void create_player_unit(
     registry.emplace<PlayerControlled>(unit);
 }
 
-void make_selection(
-    entt::registry& registry,
-    Point point
-) {
+void make_selection(entt::registry& registry, Point point) {
     auto view = registry.view<Point, PlayerControlled>();
 
     // Select a unit if one is selected.
