@@ -1,5 +1,6 @@
 #include "battlefield_window.hpp"
 
+#include <algorithm>
 #include <entt/entity/registry.hpp>
 #include <cmath>
 
@@ -35,7 +36,7 @@ namespace curses {
 
 // Implementation details.
 struct BattlefieldWindow::Impl {
-    static std::set<Point> _get_path_to_draw(
+    static std::vector<Point> _get_path_to_draw(
         BattlefieldWindow& window,
         const entt::registry& registry,
         const Grid& grid
@@ -46,7 +47,7 @@ struct BattlefieldWindow::Impl {
             return a_star_movement(registry, grid, point, window._field_pos);
         }
 
-        return std::set<Point>();
+        return std::vector<Point>();
     }
 
     // Draw hexes like so:
@@ -58,7 +59,7 @@ struct BattlefieldWindow::Impl {
         BattlefieldWindow& window,
         const entt::registry& registry,
         const Grid& grid,
-        const std::set<Point>& path,
+        const std::vector<Point>& path,
         const Point point
     ) {
         window._field.clear();
@@ -78,7 +79,10 @@ struct BattlefieldWindow::Impl {
                     if (grid.has(draw_point.x, draw_point.y)) {
                         if (mech_exists_at_point(registry, draw_point)) {
                             window._field.draw(i, j, '%');
-                        } else if (path.contains(draw_point)) {
+                        } else if (
+                            // Search the path vector for this draw point.
+                            std::find(path.begin(), path.end(), draw_point) != path.end()
+                        ) {
                             window._field.draw(i, j, 'X');
                         } else {
                             window._field.draw(i, j, '.');
@@ -162,15 +166,12 @@ struct BattlefieldWindow::Impl {
 
     BattlefieldWindowAction BattlefieldWindow::step(
         const entt::registry& registry,
-        const Grid& grid
+        const Grid& grid,
+        const bool input_locked
     ) {
-        Impl::_draw_hexes(
-            *this,
-            registry,
-            grid,
-            Impl::_get_path_to_draw(*this, registry, grid),
-            _field_pos
-        );
+        const auto path = Impl::_get_path_to_draw(*this, registry, grid);
+
+        Impl::_draw_hexes(*this, registry, grid, path, _field_pos);
 
         // Draw the coordinates atop the HUD.
         _hud.clear();
@@ -183,9 +184,20 @@ struct BattlefieldWindow::Impl {
         _hud.refresh();
         _field.refresh();
 
+        curses::Input input;
+
+        // Prevent inputs if input is locked.
+        if (input_locked) {
+            // Wait 10 frames of 60FPS, thereabouts.
+            curses::sleep(16 * 10);
+            input = curses::check_for_resize();
+        } else {
+            input = curses::get_input();
+        }
+
         auto action = BattlefieldWindowAction::none;
 
-        switch (curses::get_input()) {
+        switch (input) {
             case curses::Input::resize:
                 Impl::_resize_windows(*this);
                 break;

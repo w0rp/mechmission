@@ -13,13 +13,18 @@ namespace curses {
         space,
     };
 
-    void start_ui();
-    void stop_ui();
-    void clear_ui();
-    void refresh_ui();
-    int screen_width();
-    int screen_height();
-    Input get_input();
+    void start_ui() noexcept;
+    void stop_ui() noexcept;
+    void clear_ui() noexcept;
+    void refresh_ui() noexcept;
+    int screen_width() noexcept;
+    int screen_height() noexcept;
+    // Sleep for a number of milliseconds.
+    void sleep(int ms) noexcept;
+    // Check for a window resize input or otherwise return unknown input.
+    // This should be called after sleeping to resize windows.
+    Input check_for_resize() noexcept;
+    Input get_input() noexcept;
 }
 
 #endif

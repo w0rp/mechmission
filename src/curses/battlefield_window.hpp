@@ -29,7 +29,8 @@ namespace curses {
         bool set_cursor(const Grid& grid, const Point point);
         BattlefieldWindowAction step(
             const entt::registry& registry,
-            const Grid& grid
+            const Grid& grid,
+            const bool input_locked
         );
     };
 }

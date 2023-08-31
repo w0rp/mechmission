@@ -2,7 +2,6 @@
 #include <cmath>
 #include <queue>
 #include <array>
-#include <set>
 #include <unordered_map>
 
 #include <entt/entity/registry.hpp>
@@ -89,32 +88,26 @@ struct PointCostCompare {
     }
 };
 
-std::set<Point> get_computed_path(
+std::vector<Point> get_computed_path(
     const std::unordered_map<Point, Point>& reverse_direction_map,
     Point last
 ) {
     // Put the items in a vector and reverse it.
-    std::vector<Point> path_vector;
-    path_vector.reserve(reverse_direction_map.size());
+    std::vector<Point> path;
+    path.reserve(reverse_direction_map.size());
 
     while (reverse_direction_map.contains(last)) {
-        path_vector.push_back(last);
+        path.push_back(last);
         last = reverse_direction_map.at(last);
     }
 
-    std::reverse(path_vector.begin(), path_vector.end());
-
-    // Take the items from the vector and create a set from it.
-    std::set<Point> path;
-
-    for (auto& name: path_vector) {
-        path.insert(name);
-    }
+    // Reverse the path back to forwards order again.
+    std::reverse(path.begin(), path.end());
 
     return path;
 }
 
-std::set<Point> a_star_movement(
+std::vector<Point> a_star_movement(
     const entt::registry& registry,
     const Grid& grid,
     Point start,
@@ -161,7 +154,7 @@ std::set<Point> a_star_movement(
 
     if (last != goal) {
         // Return an empty set if we can't reach the goal.
-        return std::set<Point>();
+        return std::vector<Point>();
     }
 
     return get_computed_path(reverse_direction_map, last);

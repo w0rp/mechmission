@@ -3,35 +3,56 @@
 #include <ncurses.h>
 
 namespace curses {
-    void start_ui() {
+    void start_ui() noexcept {
         initscr();
         raw();
         keypad(stdscr, TRUE);
-        // curs_set(0);
         noecho();
     }
 
-    void stop_ui() {
+    void stop_ui() noexcept {
         endwin();
     }
 
-    void clear_ui() {
+    void clear_ui() noexcept {
         wclear(stdscr);
     }
 
-    void refresh_ui() {
+    void refresh_ui() noexcept {
         refresh();
     }
 
-    int screen_width() {
+    int screen_width() noexcept {
        return getmaxx(stdscr);
     }
 
-    int screen_height() {
+    int screen_height() noexcept {
        return getmaxy(stdscr);
     }
 
-    Input get_input() {
+    void sleep(int ms) noexcept {
+        napms(ms);
+    }
+
+    Input check_for_resize() noexcept {
+        auto input = Input::unknown;
+        int ch;
+        // Stop blocking for getch calls.
+        nodelay(stdscr, TRUE);
+
+        while((ch = getch()) != ERR) {
+            if (ch == KEY_RESIZE) {
+                input = Input::resize;
+            }
+        }
+
+        // Start blocking forever again.
+        wtimeout(stdscr, -1);
+
+        return input;
+    }
+
+    Input get_input() noexcept {
         switch(getch()) {
             case 'q':
             case 27: // Escape

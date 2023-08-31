@@ -1,13 +1,11 @@
+#include <entt/entity/registry.hpp>
+
 #include "grid.hpp"
 #include "components.hpp"
 #include "curses/screen.hpp"
 #include "curses/battlefield_window.hpp"
 
-#include <entt/entity/registry.hpp>
-
-#include <ncurses.h>
-
-
+#include "movement_system.hpp"
 void create_player_unit(
     entt::registry& registry,
     Point point,
@@ -17,35 +15,6 @@ void create_player_unit(
     registry.emplace<Point>(unit, point);
     registry.emplace<Mech>(unit, mech);
     registry.emplace<PlayerControlled>(unit);
-}
-
-void make_selection(entt::registry& registry, Point point) {
-    auto view = registry.view<Point, PlayerControlled>();
-
-    // Select a unit if one is selected.
-    for(auto [entity, unit_point]: view.each()) {
-        if (unit_point == point) {
-            registry.clear<PlayerSelected>();
-            registry.emplace<PlayerSelected>(entity);
-        }
-    }
-
-    // Prevent movement if the selected space has an object on it.
-    for(auto [entity, object_point]: registry.view<Point>().each()) {
-        if (object_point == point) {
-            return;
-        }
-    }
-
-    auto selected = registry.view<PlayerSelected>();
-
-    // Move a unit to a point if one is selected.
-    for(auto [entity, unit_point]: view.each()) {
-        if (selected.contains(entity)) {
-            registry.clear<PlayerSelected>();
-            unit_point = point;
-        }
-    }
 }
 
 int main(int argc, char** argv) {
@@ -72,21 +41,23 @@ int main(int argc, char** argv) {
 
     Grid g{5};
 
+    // A system for handling movement in a battlefield.
+    MovementSystem movement_system;
+
     curses::start_ui();
     curses::BattlefieldWindow window;
 
     bool done = false;
 
     while (!done) {
-        switch (window.step(registry, g)) {
+        bool input_locked = movement_system.step(registry, g);
+
+        switch (window.step(registry, g, input_locked)) {
             case curses::BattlefieldWindowAction::quit:
                 done = true;
                 break;
             case curses::BattlefieldWindowAction::select:
-                make_selection(
-                    registry,
-                    window.cursor()
-                );
+                movement_system.make_selection(registry, g, window.cursor());
 
                 break;
             case curses::BattlefieldWindowAction::none:
