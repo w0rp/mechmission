@@ -11,12 +11,15 @@ namespace curses {
         left,
         right,
         space,
+        question_mark,
     };
 
     void start_ui() noexcept;
     void stop_ui() noexcept;
     void clear_ui() noexcept;
     void refresh_ui() noexcept;
+    void hide_cursor() noexcept;
+    void show_cursor() noexcept;
     int screen_width() noexcept;
     int screen_height() noexcept;
     // Sleep for a number of milliseconds.

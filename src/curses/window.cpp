@@ -17,11 +17,11 @@ namespace curses {
         mvwin((WINDOW*)_window, y, x);
     }
 
-    int Window::width() {
+    int Window::width() const {
        return getmaxx((WINDOW*)_window);
     }
 
-    int Window::height() {
+    int Window::height() const {
        return getmaxy((WINDOW*)_window);
     }
 

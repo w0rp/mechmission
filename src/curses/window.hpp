@@ -18,8 +18,8 @@ namespace curses {
         ~Window();
 
         void resize(int x, int y, int width, int height);
-        int width();
-        int height();
+        int width() const;
+        int height() const;
         void position_cursor(int x, int y);
         void draw(int x, int y, char chr);
         void draw(int x, int y, const char* str);

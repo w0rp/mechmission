@@ -1,4 +1,5 @@
 #include <entt/entity/registry.hpp>
+#include <tuple>
 
 #include "grid.hpp"
 #include "movement_system.hpp"
@@ -7,6 +8,7 @@
 #include "components/control.hpp"
 #include "curses/screen.hpp"
 #include "curses/battlefield_window.hpp"
+#include "curses/battlefield_help_window.hpp"
 
 void create_player_unit(
     entt::registry& registry,
@@ -19,9 +21,61 @@ void create_player_unit(
     registry.emplace<PlayerControlled>(unit);
 }
 
-int main(int argc, char** argv) {
-    entt::registry registry;
+enum class ActiveScreen {
+    none,
+    battlefield,
+    battlefield_help,
+};
 
+std::tuple<ActiveScreen, Point> run_battlefield_window(
+    entt::registry& registry,
+    Grid& grid,
+    MovementSystem& movement_system,
+    const Point& initial_cursor
+) {
+    curses::show_cursor();
+    curses::BattlefieldWindow window{initial_cursor};
+
+    while (true) {
+        bool input_locked = movement_system.step(registry, grid);
+
+        switch (window.step(registry, grid, input_locked)) {
+            case curses::BattlefieldWindowAction::quit:
+                return std::make_tuple(
+                    ActiveScreen::none,
+                    window.cursor()
+                );
+            case curses::BattlefieldWindowAction::help:
+                return std::make_tuple(
+                    ActiveScreen::battlefield_help,
+                    window.cursor()
+                );
+            case curses::BattlefieldWindowAction::select:
+                movement_system.make_selection(registry, grid, window.cursor());
+
+                break;
+            case curses::BattlefieldWindowAction::none:
+                break;
+        }
+    }
+}
+
+ActiveScreen run_battlefield_help_window() {
+    curses::hide_cursor();
+    curses::BattlefieldHelpWindow window;
+
+    while(true) {
+        switch (window.step()) {
+            case curses::BattlefieldHelpWindowAction::quit:
+                return ActiveScreen::battlefield;
+            case curses::BattlefieldHelpWindowAction::none:
+                break;
+        }
+    }
+}
+
+void run_battlefield() {
+    entt::registry registry;
     create_player_unit(
         registry,
         Point(1, 1),
@@ -41,31 +95,37 @@ int main(int argc, char** argv) {
         }
     );
 
-    Grid g{5};
+    Grid grid{5};
 
     // A system for handling movement in a battlefield.
     MovementSystem movement_system;
 
-    curses::start_ui();
-    curses::BattlefieldWindow window;
+    auto active_screen = ActiveScreen::battlefield;
+    Point cursor{0, 0};
 
-    bool done = false;
-
-    while (!done) {
-        bool input_locked = movement_system.step(registry, g);
-
-        switch (window.step(registry, g, input_locked)) {
-            case curses::BattlefieldWindowAction::quit:
-                done = true;
+    while(active_screen != ActiveScreen::none) {
+        switch(active_screen) {
+            case ActiveScreen::battlefield:
+                std::tie(active_screen, cursor) = run_battlefield_window(
+                    registry,
+                    grid,
+                    movement_system,
+                    cursor
+                );
                 break;
-            case curses::BattlefieldWindowAction::select:
-                movement_system.make_selection(registry, g, window.cursor());
-
+            case ActiveScreen::battlefield_help:
+                active_screen = run_battlefield_help_window();
                 break;
-            case curses::BattlefieldWindowAction::none:
-                break;
+            default:
+                active_screen = ActiveScreen::none;
         }
     }
+}
+
+int main(int argc, char** argv) {
+    curses::start_ui();
+
+    run_battlefield();
 
     curses::stop_ui();
 

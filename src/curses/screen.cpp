@@ -22,6 +22,14 @@ namespace curses {
         refresh();
     }
 
+    void hide_cursor() noexcept {
+        curs_set(0);
+    }
+
+    void show_cursor() noexcept {
+        curs_set(1);
+    }
+
     int screen_width() noexcept {
        return getmaxx(stdscr);
     }
@@ -73,6 +81,8 @@ namespace curses {
                 return Input::right;
             case ' ':
                 return Input::space;
+            case '?':
+                return Input::question_mark;
             default:
                 return Input::unknown;
         }

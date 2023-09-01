@@ -13,6 +13,7 @@ namespace curses {
     enum class BattlefieldWindowAction {
         none,
         quit,
+        help,
         select
     };
 
@@ -24,9 +25,10 @@ namespace curses {
         // A composed struct for forward-declaring implementation details.
         struct Impl;
     public:
-        BattlefieldWindow();
-        Point cursor() const;
-        bool set_cursor(const Grid& grid, const Point point);
+        BattlefieldWindow() = delete;
+        BattlefieldWindow(const Point& field_pos) noexcept;
+        Point cursor() const noexcept;
+        bool set_cursor(const Grid& grid, const Point point) noexcept;
         BattlefieldWindowAction step(
             const entt::registry& registry,
             const Grid& grid,

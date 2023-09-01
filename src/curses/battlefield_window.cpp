@@ -14,13 +14,11 @@
 namespace curses {
     const int HUD_WIDTH = 20;
 
-    BattlefieldWindow::BattlefieldWindow():
+    BattlefieldWindow::BattlefieldWindow(const Point& field_pos) noexcept:
         _hud(0, 0, HUD_WIDTH, curses::screen_height()),
         _field(HUD_WIDTH, 0, curses::screen_width() - HUD_WIDTH, curses::screen_height()),
-        _field_pos(0, 0)
+        _field_pos(field_pos)
     {
-        // Draw initial borders when window is created.
-        _hud.draw_borders();
     }
 
     // Check if there is a Mech at a given point.
@@ -153,11 +151,11 @@ struct BattlefieldWindow::Impl {
     }
 };
 
-    Point BattlefieldWindow::cursor() const {
+    Point BattlefieldWindow::cursor() const noexcept {
         return _field_pos;
     }
 
-    bool BattlefieldWindow::set_cursor(const Grid& grid, const Point p) {
+    bool BattlefieldWindow::set_cursor(const Grid& grid, const Point p) noexcept {
         if (grid.has(p.x, p.y)) {
             _field_pos = p;
             return true;
@@ -179,6 +177,7 @@ struct BattlefieldWindow::Impl {
         _hud.clear();
         _hud.draw_borders();
         _hud.drawf(3, 0, "x:%+04d,y:%+04d", _field_pos.x, _field_pos.y);
+        _hud.draw(6, _hud.height() - 1, "? - help");
         Impl::_draw_unit_data(*this, registry);
 
         // The UI and windows need to be refreshed constantly.
@@ -238,6 +237,9 @@ struct BattlefieldWindow::Impl {
                 break;
             case curses::Input::quit:
                 action = BattlefieldWindowAction::quit;
+                break;
+            case curses::Input::question_mark:
+                action = BattlefieldWindowAction::help;
                 break;
             case curses::Input::unknown:
                 break;
