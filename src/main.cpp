@@ -82,7 +82,8 @@ void run_battlefield() {
         Mech{
             .number=1,
             .health=50,
-            .max_move_spaces=4,
+            .energy=25,
+            .max_energy=25,
         }
     );
     create_player_unit(
@@ -91,7 +92,8 @@ void run_battlefield() {
         Mech{
             .number=2,
             .health=75,
-            .max_move_spaces=4,
+            .energy=25,
+            .max_energy=25,
         }
     );
 

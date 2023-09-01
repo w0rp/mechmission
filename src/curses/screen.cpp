@@ -1,10 +1,13 @@
 #include "screen.hpp"
 
+#include "color.hpp"
+
 #include <ncurses.h>
 
 namespace curses {
     void start_ui() noexcept {
         initscr();
+        curses::setup_colors();
         raw();
         keypad(stdscr, TRUE);
         noecho();

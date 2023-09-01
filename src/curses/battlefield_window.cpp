@@ -9,6 +9,7 @@
 #include "../components/mech.hpp"
 #include "../components/control.hpp"
 #include "../pathing.hpp"
+#include "color.hpp"
 #include "screen.hpp"
 
 namespace curses {
@@ -17,7 +18,9 @@ namespace curses {
     BattlefieldWindow::BattlefieldWindow(const Point& field_pos) noexcept:
         _hud(0, 0, HUD_WIDTH, curses::screen_height()),
         _field(HUD_WIDTH, 0, curses::screen_width() - HUD_WIDTH, curses::screen_height()),
-        _field_pos(field_pos)
+        _field_pos(field_pos),
+        _movement_path(),
+        _movement_spaces()
     {
     }
 
@@ -36,18 +39,43 @@ namespace curses {
 
 // Implementation details.
 struct BattlefieldWindow::Impl {
-    static std::vector<Point> _get_path_to_draw(
+    static void _update_paths_to_draw(
         BattlefieldWindow& window,
         const entt::registry& registry,
         const Grid& grid
     ) {
-        auto selected = registry.view<const Point, PlayerSelected>();
+        auto selected = registry.view<const Point, const Mech, PlayerSelected>();
 
-        for(auto [entity, point]: selected.each()) {
-            return a_star_movement(registry, grid, point, window._field_pos);
+        for(auto [entity, point, mech]: selected.each()) {
+            // Track the selected entity in the window and re-compute
+            // reachable spaces only as-needed.
+            if (window._selected_entity != entity) {
+                window._selected_entity = entity;
+                bfs_reachable_spaces(
+                    window._movement_spaces,
+                    registry,
+                    grid,
+                    mech.energy,
+                    point
+                );
+            }
+
+            a_star_movement(
+                window._movement_path,
+                registry,
+                grid,
+                mech.energy,
+                point,
+                window._field_pos
+            );
+
+            return;
         }
 
-        return std::vector<Point>();
+        // Clear selection and spaces if needed.
+        window._selected_entity = entt::null;
+        window._movement_path.clear();
+        window._movement_spaces.clear();
     }
 
     // Draw hexes like so:
@@ -59,14 +87,13 @@ struct BattlefieldWindow::Impl {
         BattlefieldWindow& window,
         const entt::registry& registry,
         const Grid& grid,
-        const std::vector<Point>& path,
         const Point point
     ) {
         window._field.clear();
         const int width = window._field.width();
         const int height = window._field.height();
         const int half_height = height / 2;
-        const int offset_x = floor((width - height) / 4.0);
+        const int offset_x = int(floor((width - height) / 4.0));
 
         for (int i = 0; i < width; ++i) {
             for (int j = 0; j < height; ++j) {
@@ -76,16 +103,30 @@ struct BattlefieldWindow::Impl {
                         point.y + j - half_height
                     );
 
-                    if (grid.has(draw_point.x, draw_point.y)) {
+                    if (grid.has(draw_point)) {
                         if (mech_exists_at_point(registry, draw_point)) {
                             window._field.draw(i, j, '%');
                         } else if (
                             // Search the path vector for this draw point.
-                            std::find(path.begin(), path.end(), draw_point) != path.end()
+                            std::find(
+                                window._movement_path.begin(),
+                                window._movement_path.end(),
+                                draw_point
+                            ) != window._movement_path.end()
                         ) {
-                            window._field.draw(i, j, 'X');
-                        } else {
+                            window._field.color_on(curses::Color::terrain);
+                            window._field.draw(i, j, '_');
+                            window._field.color_off(curses::Color::terrain);
+                        } else if (
+                            window._movement_spaces.contains(draw_point)
+                        ) {
+                            window._field.color_on(curses::Color::selectable);
                             window._field.draw(i, j, '.');
+                            window._field.color_off(curses::Color::selectable);
+                        } else {
+                            window._field.color_on(curses::Color::terrain);
+                            window._field.draw(i, j, '.');
+                            window._field.color_off(curses::Color::terrain);
                         }
                     }
                 }
@@ -133,17 +174,14 @@ struct BattlefieldWindow::Impl {
         BattlefieldWindow& window,
         const entt::registry& registry
     ) {
-        auto selected = registry.view<const Mech, PlayerSelected>();
         auto view = registry.view<const Point, const Mech>();
-
-        for(auto [entity, mech]: selected.each()) {
-            window._hud.drawf(1, 2, "SELECTED: %d", mech.number);
-        }
 
         for(auto [entity, mechPoint, mech]: view.each()) {
             if (mechPoint == window._field_pos) {
-                window._hud.drawf(1, 1, "Unit %02d - %03d HP",
-                    mech.number, mech.health);
+                window._hud.drawf(1, 1, "Unit %02d", mech.number);
+                window._hud.drawf(1, 2, "HP - %03d", mech.health);
+                window._hud.drawf(1, 3, "EP - %03d/%03d",
+                    mech.energy, mech.max_energy);
 
                 break;
             }
@@ -156,7 +194,7 @@ struct BattlefieldWindow::Impl {
     }
 
     bool BattlefieldWindow::set_cursor(const Grid& grid, const Point p) noexcept {
-        if (grid.has(p.x, p.y)) {
+        if (grid.has(p)) {
             _field_pos = p;
             return true;
         }
@@ -169,9 +207,8 @@ struct BattlefieldWindow::Impl {
         const Grid& grid,
         const bool input_locked
     ) {
-        const auto path = Impl::_get_path_to_draw(*this, registry, grid);
-
-        Impl::_draw_hexes(*this, registry, grid, path, _field_pos);
+        Impl::_update_paths_to_draw(*this, registry, grid);
+        Impl::_draw_hexes(*this, registry, grid, _field_pos);
 
         // Draw the coordinates atop the HUD.
         _hud.clear();

@@ -4,6 +4,8 @@
 #include <vector>
 #include <ostream>
 
+#include "components/point.hpp"
+
 struct Space {
 };
 
@@ -18,12 +20,12 @@ public:
     Grid(int radius);
 
     int radius() const;
-    // Return `true` if coordinates exist inside of the grid.
-    bool has(int x, int y) const;
+    // Return `true` if a point exists inside of the grid.
+    bool has(const Point& p) const noexcept;
     // Get a reference to a space in the grid.
-    Space& get(int x, int y);
+    Space& get(const Point& p);
     // Get const a reference to a space in the grid.
-    const Space& get(int x, int y) const;
+    const Space& get(const Point& p) const;
 };
 
 #endif

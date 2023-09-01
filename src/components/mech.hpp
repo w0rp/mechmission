@@ -4,7 +4,8 @@
 struct Mech {
     int number;
     int health;
-    int max_move_spaces;
+    int energy;
+    int max_energy;
 };
 
 #endif

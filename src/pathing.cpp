@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <cmath>
+#include <set>
 #include <queue>
 #include <array>
 #include <unordered_map>
@@ -37,13 +38,13 @@ struct std::hash<Point>
 };
 
 // Compute the cost between two points assumed to be adjacent.
-inline double compute_cost(
+int compute_energy_cost(
     const Grid& grid,
     const Point& current,
     const Point& next
 ) {
     // TODO: Factor in terrain height.
-    return 1.0;
+    return 1 * 5;
 }
 
 // Determine if a point can be stepped on or not.
@@ -53,7 +54,7 @@ inline bool is_valid_point(
     const Point& point
 ) {
     // We can't step on points outside of the grid.
-    if (!grid.has(point.x, point.y)) {
+    if (!grid.has(point)) {
         return false;
     }
 
@@ -88,12 +89,12 @@ struct PointCostCompare {
     }
 };
 
-std::vector<Point> get_computed_path(
+void update_a_star_path(
+    std::vector<Point>& path,
     const std::unordered_map<Point, Point>& reverse_direction_map,
     Point last
 ) {
     // Put the items in a vector and reverse it.
-    std::vector<Point> path;
     path.reserve(reverse_direction_map.size());
 
     while (reverse_direction_map.contains(last)) {
@@ -103,16 +104,19 @@ std::vector<Point> get_computed_path(
 
     // Reverse the path back to forwards order again.
     std::reverse(path.begin(), path.end());
-
-    return path;
 }
 
-std::vector<Point> a_star_movement(
+void a_star_movement(
+    std::vector<Point>& path,
     const entt::registry& registry,
     const Grid& grid,
-    Point start,
-    Point goal
+    const int maximum_energy_cost,
+    const Point& start,
+    const Point& goal
 ) {
+    // Reset the path vector.
+    path.clear();
+
     // A priority queue for points with costs.
     std::priority_queue<
         PointCost,
@@ -123,12 +127,16 @@ std::vector<Point> a_star_movement(
     // Keep track of costs for each point in a map.
     std::unordered_map<Point, double> costs;
     costs[start] = 0.0;
+    // Separately track energy costs for moves.
+    std::unordered_map<Point, int> energy_costs;
+    energy_costs[start] = 0;
 
     std::unordered_map<Point, Point> reverse_direction_map;
     auto last = start;
 
     while (!que.empty()) {
         const auto [current, current_cost] = que.top();
+        const auto current_energy_cost = energy_costs.at(current);
         last = current;
         que.pop();
 
@@ -136,26 +144,76 @@ std::vector<Point> a_star_movement(
             break;
         }
 
-        for (auto next: neighbors(current)) {
+        for (auto& next: neighbors(current)) {
             // Skip points we cannot move to.
             if (!is_valid_point(registry, grid, next)) {
                 continue;
             }
 
-            const auto cost = current_cost + compute_cost(grid, current, next);
+            const int energy_cost = compute_energy_cost(grid, current, next);
+            const int total_energy_cost = current_energy_cost + energy_cost;
+
+            if (total_energy_cost > maximum_energy_cost) {
+                // Don't search this path if it will cost too much.
+                continue;
+            }
+
+            const double cost = current_cost + double(energy_cost);
 
             if (!costs.contains(next) || cost < costs.at(next)) {
                 costs[next] = cost;
+                energy_costs[next] = total_energy_cost;
                 que.emplace(next, cost + heuristic(grid, next, goal));
                 reverse_direction_map[next] = current;
             }
         }
     }
 
-    if (last != goal) {
-        // Return an empty set if we can't reach the goal.
-        return std::vector<Point>();
+    if (last == goal) {
+        update_a_star_path(path, reverse_direction_map, last);
     }
+}
 
-    return get_computed_path(reverse_direction_map, last);
+void bfs_reachable_spaces(
+    std::set<Point>& spaces,
+    const entt::registry& registry,
+    const Grid& grid,
+    const int maximum_energy_cost,
+    const Point& start
+) {
+    // Reset available spaces to include where the unit is.
+    spaces.clear();
+    spaces.emplace(start);
+
+    // Put the current space in a queue and fan outwards.
+    std::queue<Point> que;
+    que.emplace(start);
+    // Track energy costs for moves.
+    std::unordered_map<Point, int> energy_costs;
+    energy_costs[start] = 0;
+
+    while (!que.empty()) {
+        const auto current = que.front();
+        que.pop();
+        const auto current_energy_cost = energy_costs.at(current);
+
+        for (auto& next: neighbors(current)) {
+            if (
+                is_valid_point(registry, grid, next)
+                && !spaces.contains(next)
+            ) {
+                const int energy_cost = compute_energy_cost(grid, current, next);
+                const int total_energy_cost = current_energy_cost + energy_cost;
+
+                if (total_energy_cost > maximum_energy_cost) {
+                    // Don't include this space if it will cost too much.
+                    continue;
+                }
+
+                energy_costs[next] = total_energy_cost;
+                que.emplace(next);
+                spaces.emplace(next);
+            }
+        }
+    }
 }

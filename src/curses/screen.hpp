@@ -1,6 +1,8 @@
 #ifndef __MECHMISSION_CURSES_SCREEN_H_
 #define __MECHMISSION_CURSES_SCREEN_H_
 
+#include "color.hpp"
+
 namespace curses {
     enum class Input {
         unknown,
