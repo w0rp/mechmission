@@ -32,11 +32,20 @@ int grid_index(int radius, int rhombus_size, int x, int y) {
 Grid::Grid(int radius):
     _radius(radius),
     _rhombus_size(radius * (radius + 1)),
+    _turn_number(1),
     _spaces(1 + _rhombus_size * 3)
     {}
 
 int Grid::radius() const {
     return _radius;
+}
+
+int Grid::turn_number() const {
+    return _turn_number;
+}
+
+void Grid::set_turn_number(int new_number) {
+    _turn_number = new_number;
 }
 
 bool Grid::has(const Point& p) const noexcept {

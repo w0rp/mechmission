@@ -3,6 +3,7 @@
 
 #include "grid.hpp"
 #include "movement_system.hpp"
+#include "turn_system.hpp"
 #include "components/point.hpp"
 #include "components/mech.hpp"
 #include "components/control.hpp"
@@ -31,6 +32,7 @@ std::tuple<ActiveScreen, Point> run_battlefield_window(
     entt::registry& registry,
     Grid& grid,
     MovementSystem& movement_system,
+    TurnSystem& turn_system,
     const Point& initial_cursor
 ) {
     curses::show_cursor();
@@ -53,6 +55,9 @@ std::tuple<ActiveScreen, Point> run_battlefield_window(
             case curses::BattlefieldWindowAction::select:
                 movement_system.make_selection(registry, grid, window.cursor());
 
+                break;
+            case curses::BattlefieldWindowAction::end_turn:
+                turn_system.end_turn(registry, grid);
                 break;
             case curses::BattlefieldWindowAction::none:
                 break;
@@ -101,6 +106,7 @@ void run_battlefield() {
 
     // A system for handling movement in a battlefield.
     MovementSystem movement_system;
+    TurnSystem turn_system;
 
     auto active_screen = ActiveScreen::battlefield;
     Point cursor{0, 0};
@@ -112,6 +118,7 @@ void run_battlefield() {
                     registry,
                     grid,
                     movement_system,
+                    turn_system,
                     cursor
                 );
                 break;

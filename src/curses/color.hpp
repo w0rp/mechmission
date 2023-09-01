@@ -4,6 +4,7 @@
 namespace curses {
     enum class Color {
         normal,
+        menu_selection,
         terrain,
         selectable,
     };

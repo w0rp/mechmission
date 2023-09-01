@@ -1,14 +1,28 @@
 #include "battlefield_help_window.hpp"
 
+#include <array>
+
+#include "input.hpp"
 #include "screen.hpp"
 
 namespace curses {
     void draw_help(Window& window) noexcept {
         window.draw_borders();
-        window.draw(1, 1, "Move   - arrows,hjkl");
-        window.draw(1, 2, "Select - Space");
-        window.draw(1, 3, "Quit   - q");
-        window.draw(1, 4, "Help   - ?");
+
+        std::array help_lines{
+            "Move     - arrows,hjkl",
+            "Select   - Space",
+            "End Turn - Enter",
+            "Quit     - q",
+            "Help     - ?",
+        };
+
+        int y = 1;
+
+        for (auto&& line: help_lines) {
+            window.draw(1, y, line);
+            ++y;
+        }
     }
 
     BattlefieldHelpWindow::BattlefieldHelpWindow() noexcept:

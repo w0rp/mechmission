@@ -4,7 +4,14 @@
 
 namespace curses {
     Window::Window(int x, int y, int width, int height) noexcept:
+        _parent_window(nullptr),
         _window{newwin(height, width, y, x)}
+    {
+    }
+
+    Window::Window(const Window& parent, int x, int y, int width, int height) noexcept:
+        _parent_window(parent._window),
+        _window{derwin((WINDOW*)_parent_window, height, width, y, x)}
     {
     }
 
@@ -14,7 +21,21 @@ namespace curses {
 
     void Window::resize(int x, int y, int width, int height) noexcept {
         wresize((WINDOW*)_window, height, width);
-        mvwin((WINDOW*)_window, y, x);
+
+        if (_parent_window) {
+            // mvderwin is supposed to move a window inside of a parent
+            // correctly, but it doesn't appear to work properly, so we can do
+            // it ourselves.
+            //
+            // This doesn't account for grandchild windows.
+            mvwin(
+                (WINDOW*)_window,
+                y + getbegy((WINDOW*)_parent_window),
+                x + getbegx((WINDOW*)_parent_window)
+            );
+        } else {
+            mvwin((WINDOW*)_window, y, x);
+        }
     }
 
     int Window::width() const noexcept {
@@ -27,6 +48,11 @@ namespace curses {
 
     void Window::position_cursor(int x, int y) noexcept {
         wmove((WINDOW*)_window, y, x);
+    }
+
+    void Window::fill(curses::Color color) noexcept {
+        // FIXME: We can't set other colours after we use this?
+        wbkgd((WINDOW*)_window, COLOR_PAIR(int(color)));
     }
 
     void Window::color_on(curses::Color color) noexcept {
@@ -63,6 +89,10 @@ namespace curses {
     }
 
     void Window::refresh() noexcept {
+        if (_parent_window) {
+            touchwin((WINDOW*)_parent_window);
+        }
+
         wrefresh((WINDOW*)_window);
     }
 }

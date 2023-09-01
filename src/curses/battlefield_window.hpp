@@ -13,9 +13,10 @@
 namespace curses {
     enum class BattlefieldWindowAction {
         none,
+        select,
+        end_turn,
         quit,
         help,
-        select
     };
 
     class BattlefieldWindow {

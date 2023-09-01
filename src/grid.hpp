@@ -15,11 +15,16 @@ std::ostream& operator<<(std::ostream& os, const Space& s);
 class Grid {
     int _radius;
     int _rhombus_size;
+    int _turn_number;
     std::vector<Space> _spaces;
 public:
     Grid(int radius);
 
     int radius() const;
+    // Get the current turn number.
+    int turn_number() const;
+    // Update the turn number.
+    void set_turn_number(int new_number);
     // Return `true` if a point exists inside of the grid.
     bool has(const Point& p) const noexcept;
     // Get a reference to a space in the grid.

@@ -1,5 +1,6 @@
 #include "battlefield_window.hpp"
 
+#include <cstring>
 #include <algorithm>
 #include <entt/entity/registry.hpp>
 #include <cmath>
@@ -10,6 +11,7 @@
 #include "../components/control.hpp"
 #include "../pathing.hpp"
 #include "color.hpp"
+#include "input.hpp"
 #include "screen.hpp"
 
 namespace curses {
@@ -156,6 +158,37 @@ struct BattlefieldWindow::Impl {
         window._field.position_cursor(cursor_i, cursor_j);
     }
 
+    static void _draw_hud(
+        BattlefieldWindow& window,
+        const entt::registry& registry,
+        const Grid& grid
+    ) {
+        // Draw the coordinates atop the HUD.
+        window._hud.clear();
+        window._hud.draw_borders();
+        window._hud.drawf(3, 0, "x:%+04d,y:%+04d",
+            window._field_pos.x, window._field_pos.y);
+        window._hud.drawf(1, window._hud.height() - 2,
+            "Turn: %d", grid.turn_number());
+        window._hud.draw(6, window._hud.height() - 1, "? - help");
+
+        _draw_unit_data(window, registry);
+    }
+
+    static void _draw_windows(
+        BattlefieldWindow& window,
+        const entt::registry& registry,
+        const Grid& grid
+    ) {
+        _update_paths_to_draw(window, registry, grid);
+        _draw_hexes(window, registry, grid, window._field_pos);
+        _draw_hud(window, registry, grid);
+        // The UI and windows need to be refreshed constantly.
+        curses::refresh_ui();
+        window._hud.refresh();
+        window._field.refresh();
+    }
+
     // Redraw window borders and such when the terminal is resized.
     static void _resize_windows(BattlefieldWindow& window) {
         auto width = curses::screen_width();
@@ -187,6 +220,89 @@ struct BattlefieldWindow::Impl {
             }
         }
     }
+
+    static void _draw_confirm_popup(
+        Window& popup,
+        const bool ok,
+        const char* message,
+        const char* ok_text
+    ) {
+        popup.clear();
+        popup.draw_borders();
+        popup.draw(popup.width() / 2 - strlen(message) / 2 - 1, 1, message);
+
+        if (!ok) popup.color_on(curses::Color::menu_selection);
+        popup.draw(2, 3, "[Cancel]");
+        if (!ok) popup.color_off(curses::Color::menu_selection);
+        if (ok) popup.color_on(curses::Color::menu_selection);
+        popup.draw(popup.width() - strlen(ok_text) - 4, 3, '[');
+        popup.draw(popup.width() - strlen(ok_text) - 3, 3, ok_text);
+        popup.draw(popup.width() - 3, 3, ']');
+        if (ok) popup.color_off(curses::Color::menu_selection);
+
+        popup.refresh();
+    }
+
+    static bool _confirm_action(
+        BattlefieldWindow& window,
+        const entt::registry& registry,
+        const Grid& grid,
+        const char* message,
+        const char* ok_text
+    ) {
+        bool ok = false;
+
+        hide_cursor();
+
+        const int popup_width = 30;
+        const int popup_height = 5;
+        Window popup{
+            window._field,
+            window._field.width() / 2 - popup_width / 2,
+            window._field.height() / 2 - popup_height / 2,
+            popup_width,
+            popup_height,
+        };
+
+        bool done = false;
+
+        while (!done) {
+            _draw_confirm_popup(popup, ok, message, ok_text);
+
+            switch (curses::get_input()) {
+                case curses::Input::resize:
+                    // Resize the main windows and popup.
+                    _resize_windows(window);
+                    popup.resize(
+                        window._field.width() / 2 - popup_width / 2,
+                        window._field.height() / 2 - popup_height / 2,
+                        popup_width,
+                        popup_height
+                    );
+                    // Redraw the main windows first.
+                    _draw_windows(window, registry, grid);
+                    // We'll redraw the popup in the next iteration.
+                    break;
+                case curses::Input::quit:
+                    ok = false;
+                    done = true;
+                    break;
+                case curses::Input::left:
+                case curses::Input::right:
+                    ok = !ok;
+                    break;
+                case curses::Input::enter:
+                    done = true;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        show_cursor();
+
+        return ok;
+    }
 };
 
     Point BattlefieldWindow::cursor() const noexcept {
@@ -207,20 +323,7 @@ struct BattlefieldWindow::Impl {
         const Grid& grid,
         const bool input_locked
     ) {
-        Impl::_update_paths_to_draw(*this, registry, grid);
-        Impl::_draw_hexes(*this, registry, grid, _field_pos);
-
-        // Draw the coordinates atop the HUD.
-        _hud.clear();
-        _hud.draw_borders();
-        _hud.drawf(3, 0, "x:%+04d,y:%+04d", _field_pos.x, _field_pos.y);
-        _hud.draw(6, _hud.height() - 1, "? - help");
-        Impl::_draw_unit_data(*this, registry);
-
-        // The UI and windows need to be refreshed constantly.
-        curses::refresh_ui();
-        _hud.refresh();
-        _field.refresh();
+        Impl::_draw_windows(*this, registry, grid);
 
         curses::Input input;
 
@@ -272,8 +375,31 @@ struct BattlefieldWindow::Impl {
             case curses::Input::space:
                 action = BattlefieldWindowAction::select;
                 break;
+            case curses::Input::enter:
+                if (
+                    Impl::_confirm_action(
+                        *this,
+                        registry,
+                        grid,
+                        "End turn?",
+                        "End Turn"
+                    )
+                ) {
+                    action = BattlefieldWindowAction::end_turn;
+                }
+                break;
             case curses::Input::quit:
-                action = BattlefieldWindowAction::quit;
+                if (
+                    Impl::_confirm_action(
+                        *this,
+                        registry,
+                        grid,
+                        "Quit game?",
+                        "Quit"
+                    )
+                ) {
+                    action = BattlefieldWindowAction::quit;
+                }
                 break;
             case curses::Input::question_mark:
                 action = BattlefieldWindowAction::help;
