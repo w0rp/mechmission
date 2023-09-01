@@ -5,7 +5,7 @@
 #include "window.hpp"
 
 #include "../grid.hpp"
-#include "../components.hpp"
+#include "../components/point.hpp"
 
 #include <entt/entity/registry.hpp>
 

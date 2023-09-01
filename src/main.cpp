@@ -1,11 +1,13 @@
 #include <entt/entity/registry.hpp>
 
 #include "grid.hpp"
-#include "components.hpp"
+#include "movement_system.hpp"
+#include "components/point.hpp"
+#include "components/mech.hpp"
+#include "components/control.hpp"
 #include "curses/screen.hpp"
 #include "curses/battlefield_window.hpp"
 
-#include "movement_system.hpp"
 void create_player_unit(
     entt::registry& registry,
     Point point,

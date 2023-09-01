@@ -5,7 +5,7 @@
 
 #include <entt/entity/registry.hpp>
 
-#include "components.hpp"
+#include "components/point.hpp"
 #include "grid.hpp"
 #include "entt/entity/fwd.hpp"
 

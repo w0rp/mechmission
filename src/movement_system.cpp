@@ -1,5 +1,7 @@
 #include "movement_system.hpp"
 
+#include "components/control.hpp"
+#include "components/point.hpp"
 #include "pathing.hpp"
 
 MovementSystem::MovementSystem():

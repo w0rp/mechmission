@@ -5,7 +5,9 @@
 #include <cmath>
 
 #include "../grid.hpp"
-#include "../components.hpp"
+#include "../components/point.hpp"
+#include "../components/mech.hpp"
+#include "../components/control.hpp"
 #include "../pathing.hpp"
 #include "screen.hpp"
 

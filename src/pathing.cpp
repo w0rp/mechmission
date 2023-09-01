@@ -7,7 +7,7 @@
 #include <entt/entity/registry.hpp>
 
 #include "grid.hpp"
-#include "components.hpp"
+#include "components/point.hpp"
 
 // Compute neighbors around a hexagonal point.
 inline std::array<Point, 6> neighbors(Point p) {

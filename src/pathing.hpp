@@ -6,7 +6,7 @@
 #include <entt/entity/registry.hpp>
 
 #include "grid.hpp"
-#include "components.hpp"
+#include "components/point.hpp"
 
 std::vector<Point> a_star_movement(
     const entt::registry& registry,
