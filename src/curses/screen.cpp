@@ -60,12 +60,16 @@ namespace curses {
             case KEY_RESIZE:
                 return Input::resize;
             case KEY_UP:
+            case 'k':
                 return Input::up;
             case KEY_DOWN:
+            case 'j':
                 return Input::down;
             case KEY_LEFT:
+            case 'h':
                 return Input::left;
             case KEY_RIGHT:
+            case 'l':
                 return Input::right;
             case ' ':
                 return Input::space;
