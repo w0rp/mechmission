@@ -1,12 +1,15 @@
 #ifndef __MECHMISSION_GAME_ACTION_H_
 #define __MECHMISSION_GAME_ACTION_H_
 
-enum class GameAction {
+#include "components/point.hpp"
+
+enum class GameActionTag {
     none,
     close_window,
     battlefield_ask_quit,
     battlefield_quit,
     battlefield_select,
+    battlefield_select_point,
     battlefield_ask_end_turn,
     battlefield_end_turn,
     battlefield_move_up,
@@ -14,6 +17,23 @@ enum class GameAction {
     battlefield_move_left,
     battlefield_move_right,
     battlefield_help,
+};
+
+class GameAction {
+public:
+    const GameActionTag tag;
+private:
+    union {
+        Point _point;
+    };
+public:
+    // You should not be able to default construct a tag.
+    GameAction() = delete;
+
+    GameAction(GameActionTag tag);
+    GameAction(GameActionTag tag, const Point& point);
+
+    const Point& point() const;
 };
 
 #endif

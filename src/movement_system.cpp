@@ -21,7 +21,11 @@ void MovementSystem::move_cursor(GameState& game_state, const Point& new_pos) {
     }
 }
 
-void MovementSystem::make_selection(GameState& game_state) {
+void MovementSystem::make_selection(GameState& game_state, const Point& point) {
+    // Always move the cursor to the selection point.
+    // There may or may not be something to select there.
+    move_cursor(game_state, point);
+
     auto& registry = game_state.registry();
     auto view = registry.view<Point, const Mech>();
 
@@ -29,7 +33,7 @@ void MovementSystem::make_selection(GameState& game_state) {
     for(auto [entity, unit_point, mech]: view.each()) {
         if (
             mech.player_number == game_state.player_number()
-            && unit_point == game_state.grid_pos()
+            && unit_point == point
         ) {
             registry.clear<ActingUnit>();
             registry.emplace<ActingUnit>(entity);
@@ -38,7 +42,7 @@ void MovementSystem::make_selection(GameState& game_state) {
 
     // Prevent movement if the selected space has an object on it.
     for(auto [entity, object_point]: registry.view<Point>().each()) {
-        if (object_point == game_state.grid_pos()) {
+        if (object_point == point) {
             return;
         }
     }
@@ -56,7 +60,7 @@ void MovementSystem::make_selection(GameState& game_state) {
                 game_state.grid(),
                 mech.energy,
                 unit_point,
-                game_state.grid_pos()
+                point
             );
             _entity_to_move = entity;
         }

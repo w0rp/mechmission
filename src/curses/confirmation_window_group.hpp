@@ -12,6 +12,9 @@ namespace curses {
         const char* _ok_text;
         bool _ok;
         GameAction _ok_action;
+
+        // A forward declaration to private implementation details.
+        struct Impl;
     public:
         ConfirmationWindowGroup(
             const Window& parent_window,

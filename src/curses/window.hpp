@@ -11,6 +11,7 @@
 #endif
 
 #include "color.hpp"
+#include "mouse_position.hpp"
 
 namespace curses {
     class Window {
@@ -28,8 +29,15 @@ namespace curses {
         Window& operator=(const Window&) = delete;
 
         void resize(int x, int y, int width, int height) noexcept;
+        // Get the x position for the window.
+        int x() const noexcept;
+        // Get the y position for the window.
+        int y() const noexcept;
+        // Get the width of the window.
         int width() const noexcept;
+        // Get the height of the window.
         int height() const noexcept;
+        // Move the cursor to a given position in the window.
         void position_cursor(int x, int y) noexcept;
         // Fill a window with a given color.
         void fill(curses::Color color) noexcept;
@@ -50,6 +58,9 @@ namespace curses {
         void draw_borders() noexcept;
         void clear() noexcept;
         void refresh() noexcept;
+        // Get the mouse position for mouse input.
+        // If the key pressed isn't for mouse input, {-1, -1} is returned.
+        MousePosition get_mouse_position() noexcept;
     };
 }
 

@@ -13,7 +13,10 @@ namespace curses {
         raw();
         // Enable non-blocking input.
         timeout(0);
+        // Enable the keypad.
         keypad(stdscr, TRUE);
+        // Enable mouse events.
+        mousemask(ALL_MOUSE_EVENTS, NULL);
         noecho();
     }
 

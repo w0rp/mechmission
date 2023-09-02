@@ -15,7 +15,7 @@ public:
     MovementSystem();
 
     void move_cursor(GameState& game_state, const Point& new_pos);
-    void make_selection(GameState& game_state);
+    void make_selection(GameState& game_state, const Point& point);
     bool update(GameState& game_state, double dt);
 };
 

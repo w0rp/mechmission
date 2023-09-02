@@ -1,4 +1,5 @@
 #include "window.hpp"
+#include "input.hpp"
 
 #include <ncurses.h>
 
@@ -36,6 +37,14 @@ namespace curses {
         } else {
             mvwin((WINDOW*)_window, y, x);
         }
+    }
+
+    int Window::x() const noexcept {
+       return getbegx((WINDOW*)_window);
+    }
+
+    int Window::y() const noexcept {
+       return getbegy((WINDOW*)_window);
     }
 
     int Window::width() const noexcept {
@@ -116,5 +125,29 @@ namespace curses {
         }
 
         wrefresh((WINDOW*)_window);
+    }
+
+    MousePosition Window::get_mouse_position() noexcept {
+        auto pos = get_last_mouse_position();
+
+        // TODO: Are coordinates wrong for popups inside of windows?
+        //
+        // Translate coordinates inside of the window.
+        pos.x -= x();
+        pos.y -= y();
+
+        // If the coordinates aren't inside the bounds of the window, then
+        // set them to -1.
+        if (
+            pos.x < 0
+            || pos.y < 0
+            || pos.x >= width()
+            || pos.y >= height()
+        ) {
+            pos.x = -1;
+            pos.y = -1;
+        }
+
+        return pos;
     }
 }

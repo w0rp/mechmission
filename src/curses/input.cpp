@@ -3,23 +3,7 @@
 #include <ncurses.h>
 
 namespace curses {
-    Input check_for_resize() noexcept {
-        auto input = Input::unknown;
-        int ch;
-        // Stop blocking for getch calls.
-        nodelay(stdscr, TRUE);
-
-        while((ch = getch()) != ERR) {
-            if (ch == KEY_RESIZE) {
-                input = Input::resize;
-            }
-        }
-
-        // Start blocking forever again.
-        wtimeout(stdscr, -1);
-
-        return input;
-    }
+    MousePosition last_mouse_position;
 
     Input get_input() noexcept {
         switch(getch()) {
@@ -48,8 +32,30 @@ namespace curses {
                 return Input::question_mark;
             case '\n':
                 return Input::enter;
+            case KEY_MOUSE:
+                if (MEVENT event; getmouse(&event) == OK) {
+                    if (event.bstate & BUTTON1_CLICKED) {
+                        last_mouse_position.x = event.x;
+                        last_mouse_position.y = event.y;
+
+                        return Input::mouse_left_click;
+                    }
+
+                    if (event.bstate & BUTTON2_PRESSED) {
+                        last_mouse_position.x = event.x;
+                        last_mouse_position.y = event.y;
+
+                        return Input::mouse_right_click;
+                    }
+                }
+
+                return Input::unknown;
             default:
                 return Input::unknown;
         }
+    }
+
+    MousePosition get_last_mouse_position() noexcept {
+        return last_mouse_position;
     }
 }

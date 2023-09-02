@@ -1,7 +1,6 @@
 #include "battlefield_window_group.hpp"
 
 #include <algorithm>
-#include <entt/entity/registry.hpp>
 #include <cmath>
 
 #include "../grid.hpp"
@@ -205,6 +204,38 @@ struct BattlefieldWindowGroup::Impl {
         group._hud.refresh();
         group._field.refresh();
     }
+
+    static std::vector<GameAction> _get_mouse_selection_action(
+        BattlefieldWindowGroup& group,
+        const GameState& game_state
+    ) {
+        // The position clicked on the overall screen.
+        auto [i, j] = group._field.get_mouse_position();
+
+        // Check if the mouse position points at something inside of the grid.
+        //
+        // See _draw_hexes for origin of code for translating window
+        // coordinates to a point on the grid.
+        if (i >= 0 && j >= 0 && i % 2 == j % 2) {
+            auto& grid = game_state.grid();
+            auto& point = game_state.grid_pos();
+            const int width = group._field.width();
+            const int height = group._field.height();
+            const int half_height = height / 2;
+            const int offset_x = int(floor((width - height) / 4.0));
+
+            const Point draw_point(
+                point.x + (i - j) / 2 - offset_x,
+                point.y + j - half_height
+            );
+
+            if (grid.contains(draw_point)) {
+                return {{GameActionTag::battlefield_select_point, draw_point}};
+            }
+        }
+
+        return {};
+    }
 };
 
     const Window& BattlefieldWindowGroup::main_window() const {
@@ -229,21 +260,23 @@ struct BattlefieldWindowGroup::Impl {
     ) {
         switch (input) {
             case curses::Input::up:
-                return {GameAction::battlefield_move_up};
+                return {GameActionTag::battlefield_move_up};
             case curses::Input::down:
-                return {GameAction::battlefield_move_down};
+                return {GameActionTag::battlefield_move_down};
             case curses::Input::left:
-                return {GameAction::battlefield_move_left};
+                return {GameActionTag::battlefield_move_left};
             case curses::Input::right:
-                return {GameAction::battlefield_move_right};
+                return {GameActionTag::battlefield_move_right};
+            case curses::Input::mouse_left_click:
+                return Impl::_get_mouse_selection_action(*this, game_state);
             case curses::Input::space:
-                return {GameAction::battlefield_select};
+                return {GameActionTag::battlefield_select};
             case curses::Input::enter:
-                return {GameAction::battlefield_ask_end_turn};
+                return {GameActionTag::battlefield_ask_end_turn};
             case curses::Input::quit:
-                return {GameAction::battlefield_ask_quit};
+                return {GameActionTag::battlefield_ask_quit};
             case curses::Input::question_mark:
-                return {GameAction::battlefield_help};
+                return {GameActionTag::battlefield_help};
             default:
                 return {};
         }

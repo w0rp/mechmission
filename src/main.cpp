@@ -45,60 +45,69 @@ class GameLoopHandler {
     void _handle_game_action(GameAction action) {
         auto& current_group = _window_group_stack.back();
 
-        switch(action) {
-            case GameAction::battlefield_ask_quit:
+        switch(action.tag) {
+            case GameActionTag::battlefield_ask_quit:
                 _window_group_stack.emplace_back(
                     std::make_unique<curses::ConfirmationWindowGroup>(
                         current_group->main_window(),
                         "Quit game?",
                         "Quit",
-                        GameAction::battlefield_quit
+                        GameActionTag::battlefield_quit
                     )
                 );
                 break;
-            case GameAction::battlefield_quit:
+            case GameActionTag::battlefield_quit:
                 _should_quit = true;
                 // Stop processing further updates.
                 return;
-            case GameAction::battlefield_help:
+            case GameActionTag::battlefield_help:
                 _window_group_stack.emplace_back(
                     std::make_unique<curses::BattlefieldHelpWindowGroup>()
                 );
                 break;
-            case GameAction::battlefield_move_up:
+            case GameActionTag::battlefield_move_up:
                 // Adjusting x by even/odd y coordinates makes us
                 // go up and down the screen instead of diagonally.
                 _nudge_cursor({abs(_game_state.grid_pos().y) % 2 == 0, -1});
                 break;
-            case GameAction::battlefield_move_down:
+            case GameActionTag::battlefield_move_down:
                 _nudge_cursor({-abs(_game_state.grid_pos().y) % 2, 1});
                 break;
-            case GameAction::battlefield_move_left:
+            case GameActionTag::battlefield_move_left:
                 _nudge_cursor({-1, 0});
                 break;
-            case GameAction::battlefield_move_right:
+            case GameActionTag::battlefield_move_right:
                 _nudge_cursor({1, 0});
                 break;
-            case GameAction::battlefield_select:
-                _movement_system.make_selection(_game_state);
+            case GameActionTag::battlefield_select:
+                _movement_system.make_selection(
+                    _game_state,
+                    _game_state.grid_pos()
+                );
                 break;
-            case GameAction::battlefield_ask_end_turn:
+            case GameActionTag::battlefield_select_point:
+                _movement_system.make_selection(
+                    _game_state,
+                    action.point()
+                );
+                break;
+            case GameActionTag::battlefield_ask_end_turn:
                 _window_group_stack.emplace_back(
                     std::make_unique<curses::ConfirmationWindowGroup>(
                         current_group->main_window(),
                         "End turn?",
                         "End Turn",
-                        GameAction::battlefield_end_turn
+                        GameActionTag::battlefield_end_turn
                     )
                 );
                 break;
-            case GameAction::battlefield_end_turn:
+            case GameActionTag::battlefield_end_turn:
                 _turn_system.end_turn(_game_state);
                 break;
-            case GameAction::close_window:
+            case GameActionTag::close_window:
                 _window_group_stack.pop_back();
                 break;
-            case GameAction::none:
+            case GameActionTag::none:
                 break;
         }
     }

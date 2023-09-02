@@ -22,7 +22,7 @@ namespace curses {
         curses::Input input
     ) {
         if (input == Input::quit) {
-            return {GameAction::close_window};
+            return {GameActionTag::close_window};
         }
 
         return {};
@@ -38,6 +38,8 @@ namespace curses {
             "End Turn - Enter",
             "Quit     - q",
             "Help     - ?",
+            "",
+            "Try clicking your mouse.",
         };
 
         int y = 1;
