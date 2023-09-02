@@ -35,10 +35,18 @@ namespace curses {
         void fill(curses::Color color) noexcept;
         void color_on(curses::Color color) noexcept;
         void color_off(curses::Color color) noexcept;
+        // Draw a character.
         void draw(int x, int y, char chr) noexcept;
+        // Draw a character with a given color.
+        void draw(curses::Color, int x, int y, char chr) noexcept;
+        // Draw a string.
         void draw(int x, int y, const char* str) noexcept;
-        // Draw characters with a format string.
+        // Draw a string with a given color.
+        void draw(curses::Color, int x, int y, const char* str) noexcept;
+        // Draw with a format string.
         void drawf(int x, int y, const char* fmt, ...) noexcept GCC_PRINTFLIKE(4,5);
+        // Draw with a format string and a given color.
+        void drawf(curses::Color, int x, int y, const char* fmt, ...) noexcept GCC_PRINTFLIKE(5,6);
         void draw_borders() noexcept;
         void clear() noexcept;
         void refresh() noexcept;

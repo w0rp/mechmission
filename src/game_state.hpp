@@ -5,11 +5,21 @@
 
 #include "grid.hpp"
 
+struct GameStateMapParameters {
+    const Grid& grid;
+    const Point& grid_pos;
+    int turn_number;
+    int player_number;
+    int players;
+};
+
 class GameState {
     entt::registry _registry;
     Grid _grid;
     Point _grid_pos;
     int _turn_number;
+    int _player_number;
+    int _players;
 public:
     // Disable copying and assignment.
     GameState(const GameState&) = delete;
@@ -17,11 +27,7 @@ public:
 
     GameState();
 
-    void open_map(
-        const Grid& grid,
-        const Point& grid_pos,
-        int turn_number
-    );
+    void open_map(const GameStateMapParameters& params);
     entt::registry& registry();
     const entt::registry& registry() const;
     Grid& grid();
@@ -34,6 +40,12 @@ public:
     int turn_number() const;
     // Update the current turn number.
     void set_turn_number(int turn_number);
+    // Get the current player number.
+    int player_number() const;
+    // Update the current player number.
+    void set_player_number(int player_number);
+    // Get the number of players.
+    int players() const;
 };
 
 #endif

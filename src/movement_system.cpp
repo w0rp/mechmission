@@ -23,13 +23,16 @@ void MovementSystem::move_cursor(GameState& game_state, const Point& new_pos) {
 
 void MovementSystem::make_selection(GameState& game_state) {
     auto& registry = game_state.registry();
-    auto view = registry.view<Point, const Mech, PlayerControlled>();
+    auto view = registry.view<Point, const Mech>();
 
     // Select a unit if one is selected.
     for(auto [entity, unit_point, mech]: view.each()) {
-        if (unit_point == game_state.grid_pos()) {
-            registry.clear<PlayerSelected>();
-            registry.emplace<PlayerSelected>(entity);
+        if (
+            mech.player_number == game_state.player_number()
+            && unit_point == game_state.grid_pos()
+        ) {
+            registry.clear<ActingUnit>();
+            registry.emplace<ActingUnit>(entity);
         }
     }
 
@@ -40,12 +43,12 @@ void MovementSystem::make_selection(GameState& game_state) {
         }
     }
 
-    auto selected = registry.view<PlayerSelected>();
+    auto selected = registry.view<ActingUnit>();
 
     // Indicate that we'd like to move an entity to a desired point.
     for(auto [entity, unit_point, mech]: view.each()) {
         if (selected.contains(entity)) {
-            registry.clear<PlayerSelected>();
+            registry.clear<ActingUnit>();
 
             a_star_movement(
                 _movement_path,

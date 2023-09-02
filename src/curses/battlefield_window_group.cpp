@@ -17,16 +17,17 @@ namespace curses {
     const int HUD_WIDTH = 20;
 
     // Check if there is a Mech at a given point.
-    bool mech_exists_at_point(const entt::registry& registry, Point point) {
+    // The player number of the mech will be returned.
+    int mech_exists_at_point(const entt::registry& registry, Point point) {
         auto view = registry.view<const Point, const Mech>();
 
         for(auto [entity, mechPoint, mech]: view.each()) {
             if (mechPoint == point) {
-                return true;
+                return mech.player_number;
             }
         }
 
-        return false;
+        return 0;
     }
 
     BattlefieldWindowGroup::BattlefieldWindowGroup(const Point& field_pos) noexcept:
@@ -44,7 +45,7 @@ struct BattlefieldWindowGroup::Impl {
         const GameState& game_state
     ) {
         auto selected = game_state.registry()
-            .view<const Point, const Mech, PlayerSelected>();
+            .view<const Point, const Mech, ActingUnit>();
 
         for(auto [entity, point, mech]: selected.each()) {
             // Track the selected entity in the window and re-compute
@@ -106,8 +107,14 @@ struct BattlefieldWindowGroup::Impl {
                     );
 
                     if (grid.contains(draw_point)) {
-                        if (mech_exists_at_point(registry, draw_point)) {
-                            group._field.draw(i, j, '%');
+                        auto color = curses::Color::terrain;
+                        char chr = '.';
+
+                        if (int mech_player = mech_exists_at_point(registry, draw_point); mech_player) {
+                            chr = '&';
+                            color = mech_player == game_state.player_number()
+                                ? curses::Color::normal
+                                : curses::Color::enemy_unit;
                         } else if (
                             // Search the path vector for this draw point.
                             std::find(
@@ -116,20 +123,14 @@ struct BattlefieldWindowGroup::Impl {
                                 draw_point
                             ) != group._movement_path.end()
                         ) {
-                            group._field.color_on(curses::Color::terrain);
-                            group._field.draw(i, j, '_');
-                            group._field.color_off(curses::Color::terrain);
+                            chr = '_';
                         } else if (
                             group._movement_spaces.contains(draw_point)
                         ) {
-                            group._field.color_on(curses::Color::selectable);
-                            group._field.draw(i, j, '.');
-                            group._field.color_off(curses::Color::selectable);
-                        } else {
-                            group._field.color_on(curses::Color::terrain);
-                            group._field.draw(i, j, '.');
-                            group._field.color_off(curses::Color::terrain);
+                            color = curses::Color::selectable;
                         }
+
+                        group._field.draw(color, i, j, chr);
                     }
                 }
             }
@@ -166,7 +167,8 @@ struct BattlefieldWindowGroup::Impl {
 
         for(auto [entity, mechPoint, mech]: view.each()) {
             if (mechPoint == game_state.grid_pos()) {
-                group._hud.drawf(1, 1, "Unit %02d", mech.number);
+                group._hud.drawf(1, 1, "Player %d, Unit %02d",
+                    mech.player_number, mech.number);
                 group._hud.drawf(1, 2, "HP - %03d", mech.health);
                 group._hud.drawf(1, 3, "EP - %03d/%03d",
                     mech.energy, mech.max_energy);

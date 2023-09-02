@@ -6,6 +6,7 @@ namespace curses {
         normal,
         menu_selection,
         terrain,
+        enemy_unit,
         selectable,
     };
 

@@ -11,14 +11,13 @@
 #include "turn_system.hpp"
 #include "components/point.hpp"
 #include "components/mech.hpp"
-#include "components/control.hpp"
 #include "curses/screen.hpp"
 #include "curses/window_group.hpp"
 #include "curses/battlefield_window_group.hpp"
 #include "curses/battlefield_help_window_group.hpp"
 #include "curses/confirmation_window_group.hpp"
 
-void create_player_unit(
+void create_unit(
     entt::registry& registry,
     Point point,
     Mech mech
@@ -26,7 +25,6 @@ void create_player_unit(
     const auto unit = registry.create();
     registry.emplace<Point>(unit, point);
     registry.emplace<Mech>(unit, mech);
-    registry.emplace<PlayerControlled>(unit);
 }
 
 class GameLoopHandler {
@@ -121,27 +119,42 @@ public:
 
     void setup() {
         curses::start_ui();
-        _game_state.open_map(
-            Grid(5),
-            Point(0, 0),
-            1
-        );
+        _game_state.open_map({
+            .grid=Grid(5),
+            .grid_pos=Point(0, 0),
+            .turn_number=1,
+            .player_number=1,
+            .players=2,
+        });
 
-        create_player_unit(
+        create_unit(
             _game_state.registry(),
             Point(1, 1),
             Mech{
+                .player_number=1,
                 .number=1,
                 .health=50,
                 .energy=25,
                 .max_energy=25,
             }
         );
-        create_player_unit(
+        create_unit(
             _game_state.registry(),
             Point(2, 3),
             Mech{
+                .player_number=1,
                 .number=2,
+                .health=75,
+                .energy=25,
+                .max_energy=25,
+            }
+        );
+        create_unit(
+            _game_state.registry(),
+            Point(-2, -1),
+            Mech{
+                .player_number=2,
+                .number=1,
                 .health=75,
                 .energy=25,
                 .max_energy=25,

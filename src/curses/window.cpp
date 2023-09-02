@@ -68,8 +68,20 @@ namespace curses {
         waddch((WINDOW*)_window, chr);
     }
 
+    void Window::draw(curses::Color color, int x, int y, char chr) noexcept {
+        color_on(color);
+        draw(x, y, chr);
+        color_off(color);
+    }
+
     void Window::draw(int x, int y, const char* str) noexcept {
         mvwprintw((WINDOW*)_window, y, x, "%s", str);
+    }
+
+    void Window::draw(curses::Color color, int x, int y, const char* str) noexcept {
+        color_on(color);
+        draw(x, y, str);
+        color_off(color);
     }
 
     void Window::drawf(int x, int y, const char* fmt, ...) noexcept {
@@ -78,6 +90,16 @@ namespace curses {
         va_start(args, fmt);
         vw_printw((WINDOW*)_window, fmt, args);
         va_end(args);
+    }
+
+    void Window::drawf(curses::Color color, int x, int y, const char* fmt, ...) noexcept {
+        color_on(color);
+        wmove((WINDOW*)_window, y, x);
+        va_list args;
+        va_start(args, fmt);
+        vw_printw((WINDOW*)_window, fmt, args);
+        va_end(args);
+        color_off(color);
     }
 
     void Window::draw_borders() noexcept {
