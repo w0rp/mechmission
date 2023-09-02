@@ -8,7 +8,11 @@ namespace curses {
     void start_ui() noexcept {
         initscr();
         curses::setup_colors();
+        // Pass through characters immediately without line buffering.
+        // pass other controls through verbatim.
         raw();
+        // Enable non-blocking input.
+        timeout(0);
         keypad(stdscr, TRUE);
         noecho();
     }

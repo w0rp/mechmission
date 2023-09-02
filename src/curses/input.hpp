@@ -4,6 +4,7 @@
 namespace curses {
     enum class Input {
         unknown,
+        no_more_input,
         resize,
         quit,
         up,

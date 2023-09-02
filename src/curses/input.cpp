@@ -23,6 +23,8 @@ namespace curses {
 
     Input get_input() noexcept {
         switch(getch()) {
+            case ERR:
+                return Input::no_more_input;
             case 'q':
             case 27: // Escape
                 return Input::quit;

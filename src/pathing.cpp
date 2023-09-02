@@ -54,7 +54,7 @@ inline bool is_valid_point(
     const Point& point
 ) {
     // We can't step on points outside of the grid.
-    if (!grid.has(point)) {
+    if (!grid.contains(point)) {
         return false;
     }
 

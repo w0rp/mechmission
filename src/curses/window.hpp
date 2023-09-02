@@ -23,6 +23,10 @@ namespace curses {
         Window(const Window& parent, int x, int y, int width, int height) noexcept;
         ~Window();
 
+        // Disable copying and assignment.
+        Window(const Window&) = delete;
+        Window& operator=(const Window&) = delete;
+
         void resize(int x, int y, int width, int height) noexcept;
         int width() const noexcept;
         int height() const noexcept;
