@@ -97,14 +97,14 @@ struct ConfirmationWindowGroup::Impl {
         curses::hide_cursor();
         _popup.clear();
         _popup.draw_borders();
-        _popup.draw(_popup.width() / 2 - strlen(_message) / 2 - 1, 1, _message);
+        _popup.draw(_popup.width() / 2 - int(strlen(_message)) / 2 - 1, 1, _message);
 
         if (!_ok) _popup.color_on(curses::Color::menu_selection);
         _popup.draw(2, button_row, cancel_button);
         if (!_ok) _popup.color_off(curses::Color::menu_selection);
         if (_ok) _popup.color_on(curses::Color::menu_selection);
-        _popup.draw(_popup.width() - strlen(_ok_text) - 4, button_row, '[');
-        _popup.draw(_popup.width() - strlen(_ok_text) - 3, button_row, _ok_text);
+        _popup.draw(_popup.width() - int(strlen(_ok_text)) - 4, button_row, '[');
+        _popup.draw(_popup.width() - int(strlen(_ok_text)) - 3, button_row, _ok_text);
         _popup.draw(_popup.width() - 3, button_row, ']');
         if (_ok) _popup.color_off(curses::Color::menu_selection);
 

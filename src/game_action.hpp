@@ -30,8 +30,8 @@ public:
     // You should not be able to default construct a tag.
     GameAction() = delete;
 
-    GameAction(GameActionTag tag);
-    GameAction(GameActionTag tag, const Point& point);
+    GameAction(GameActionTag new_tag);
+    GameAction(GameActionTag new_tag, const Point& point);
 
     const Point& point() const;
 };
