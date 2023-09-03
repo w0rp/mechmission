@@ -22,7 +22,7 @@ void a_star_movement(
     const entt::registry& registry,
     const Grid& grid,
     const int maximum_energy_cost,
-    const Point& start,
+    Point current,
     const Point& goal
 );
 
@@ -34,7 +34,7 @@ void bfs_reachable_spaces(
     const entt::registry& registry,
     const Grid& grid,
     const int maximum_energy_cost,
-    const Point& start
+    Point current
 );
 
 #endif
