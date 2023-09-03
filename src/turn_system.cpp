@@ -2,7 +2,6 @@
 
 #include "components/mech.hpp"
 
-// TODO: Add ability to end turn for different players.
 void TurnSystem::end_turn(
     GameState& game_state
 ) {
@@ -13,7 +12,7 @@ void TurnSystem::end_turn(
     for(auto [entity, mech]: view.each()) {
         if (mech.player_number == game_state.player_number()) {
             // Restore energy to all mechs.
-            mech.energy = mech.max_energy;
+            mech.energy = mech.battery.max_energy;
         }
     }
 

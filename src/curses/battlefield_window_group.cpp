@@ -168,9 +168,9 @@ struct BattlefieldWindowGroup::Impl {
             if (mechPoint == game_state.grid_pos()) {
                 group._hud.drawf(1, 1, "Player %d, Unit %02d",
                     mech.player_number, mech.number);
-                group._hud.drawf(1, 2, "HP - %03d", mech.health);
+                group._hud.drawf(1, 2, "HP - %03d", mech.armor.health);
                 group._hud.drawf(1, 3, "EP - %03d/%03d",
-                    mech.energy, mech.max_energy);
+                    mech.energy, mech.battery.max_energy);
 
                 break;
             }

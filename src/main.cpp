@@ -136,37 +136,159 @@ public:
             .players=2,
         });
 
+        Armor basic_armor{
+            {
+                "Basic Armor", // name
+                1, // rank
+                100, // health
+                100, // max_health
+                10, // weight
+            },
+            10, // protection
+        };
+        Legs basic_legs{
+            {
+                "Basic Legs", // name
+                1, // rank
+                100, // health
+                100, // max_health
+                10, // weight
+            },
+            2, // protection
+            1.0, // speed_multiplier
+        };
+        Engine basic_engine{
+            {
+                "Basic Engine", // name
+                1, // rank
+                100, // health
+                100, // max_health
+                10, // weight
+            },
+            1.0, // speed_multiplier
+        };
+        Battery battery{
+            {
+                "Basic Battery", // name
+                1, // rank
+                100, // health
+                100, // max_health
+                10, // weight
+            },
+            100, // energy
+            100, // max_energy
+        };
+        ShieldGenerator basic_shield_generator{
+            {
+                "Basic Shield Generator", // name
+                1, // rank
+                100, // health
+                100, // max_health
+                10, // weight
+            },
+            20, // energy_cost
+            200, // max_strength
+        };
+        Sensor basic_sensor{
+            {
+                "Basic Sensor", // name
+                1, // rank
+                100, // health
+                100, // max_health
+                10, // weight
+            },
+            5, // energy_cost
+            10, // sensor_range
+        };
+        Weapon laser_weapon{
+            {
+                "Basic Laser", // name
+                1, // rank
+                100, // health
+                100, // max_health
+                10, // weight
+            },
+            WeaponType::energy,
+            -1, // ammo
+            -1, // max_ammo
+            50, // energy_cost
+            10, // maximum_range
+            1.0, // base_accuracy
+            10, // min_physical_damage
+            15, // max_physical_damage
+            60, // min_shields_damage
+            80, // max_shields_damage
+            0, // splash_range
+            0.0, // splash_damage
+        };
+
         create_unit(
             _game_state.registry(),
             Point(1, 1),
             Mech{
-                .player_number=1,
-                .number=1,
-                .health=50,
-                .energy=25,
-                .max_energy=25,
+                1, // mech_spec_id
+                1, // player_number
+                1, // number
+                "Jools", // name
+                50, // energy
+                200, // shield_strength
+                50, // frame_weight
+                basic_armor,
+                basic_legs,
+                basic_engine,
+                battery,
+                basic_shield_generator,
+                basic_sensor,
+                // weapons
+                {laser_weapon},
+                // utils
+                {},
             }
         );
         create_unit(
             _game_state.registry(),
             Point(2, 3),
             Mech{
-                .player_number=1,
-                .number=2,
-                .health=75,
-                .energy=25,
-                .max_energy=25,
+                1, // mech_spec_id
+                1, // player_number
+                2, // number
+                "Jops", // name
+                50, // energy
+                200, // shield_strength
+                50, // frame_weight
+                basic_armor,
+                basic_legs,
+                basic_engine,
+                battery,
+                basic_shield_generator,
+                basic_sensor,
+                // weapons
+                {laser_weapon},
+                // utils
+                {},
             }
         );
         create_unit(
             _game_state.registry(),
             Point(-2, -1),
             Mech{
-                .player_number=2,
-                .number=1,
-                .health=75,
-                .energy=25,
-                .max_energy=25,
+                1, // mech_spec_id
+                2, // player_number
+                1, // number
+                "Hercules", // name
+                50, // energy
+                200, // shield_strength
+                50, // frame_weight
+                basic_armor,
+                basic_legs,
+                basic_engine,
+                battery,
+                basic_shield_generator,
+                basic_sensor,
+                // weapons
+                {laser_weapon},
+                // utils
+                {},
             }
         );
 

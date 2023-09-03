@@ -44,7 +44,7 @@ int compute_energy_cost(
     const Point& next
 ) {
     // TODO: Factor in terrain height.
-    return 1 * 5;
+    return 1 * 10;
 }
 
 // Determine if a point can be stepped on or not.
