@@ -115,12 +115,10 @@ struct BattlefieldWindowGroup::Impl {
                                 ? curses::Color::normal
                                 : curses::Color::enemy_unit;
                         } else if (
-                            // Search the path vector for this draw point.
-                            std::find(
-                                group._movement_path.begin(),
-                                group._movement_path.end(),
-                                draw_point
-                            ) != group._movement_path.end()
+                            std::ranges::any_of(
+                                group._movement_path,
+                                [&](auto&& p){ return p == draw_point; }
+                            )
                         ) {
                             chr = '_';
                         } else if (
