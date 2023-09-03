@@ -138,8 +138,8 @@ enum class WeaponSlotType {
 struct MechSpec {
     // The name of the mech spec.
     const char * name;
-    // How good the weapons can be in the mech.
-    int max_weapon_rank;
+    // Additional weight for the frame of the mech.
+    int frame_weight;
     // How good the armor can be in the mech.
     int max_armor_rank;
     // How good the legs can be in the mech.
@@ -152,6 +152,8 @@ struct MechSpec {
     int max_shield_generator_rank;
     // How good the sensor can be for the mech.
     int max_sensor_rank;
+    // How good the weapons can be in the mech.
+    int max_weapon_rank;
     // How good the utilities can be for the mech.
     int max_utility_rank;
     // The available weapon slots for the mech.
@@ -184,5 +186,8 @@ struct Mech {
     std::array<Weapon, max_weapon_slots> weapons;
     std::array<Utility, max_utility_slots> utils;
 };
+
+// A function for validating if a mech conforms to a MechSpec.
+bool mech_follows_spec(const Mech& mech, const MechSpec& spec);
 
 #endif
