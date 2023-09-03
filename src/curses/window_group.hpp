@@ -14,6 +14,10 @@ namespace curses {
         WindowGroup() {}
         virtual ~WindowGroup() {}
 
+        // Disable copying and assignment.
+        WindowGroup(const WindowGroup&) = delete;
+        WindowGroup& operator=(const WindowGroup&) = delete;
+
         virtual const Window& main_window() const = 0;
         virtual void resize() = 0;
         virtual const std::vector<GameAction> handle_input(
