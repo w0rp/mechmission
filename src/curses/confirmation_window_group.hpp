@@ -5,7 +5,9 @@
 
 namespace curses {
     class ConfirmationWindowGroup: public WindowGroup {
-        // TODO: Convert to shared_ptr
+        // NOTE: The lifetime of the parent window is assumed to be greater
+        // than the confirmation window. The reference will be dangling if
+        // the parent window is destroyed before the confirmation window.
         const Window& _parent_window;
         Window _popup;
         const char* _message;
