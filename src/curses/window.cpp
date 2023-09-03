@@ -74,7 +74,7 @@ namespace curses {
 
     void Window::draw(int x, int y, char chr) noexcept {
         wmove((WINDOW*)_window, y, x);
-        waddch((WINDOW*)_window, chr);
+        waddch((WINDOW*)_window, (unsigned int)chr);
     }
 
     void Window::draw(curses::Color color, int x, int y, char chr) noexcept {
