@@ -100,6 +100,7 @@ namespace curses {
         va_start(args, fmt);
         // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
         vw_printw(_window, fmt, args);
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
         va_end(args);
     }
 
