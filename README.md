@@ -25,7 +25,7 @@ Use `clangd` and make sure `clang-tidy-17` is installed to check code.
 Checks can be run on the whole project like so:
 
 ```
-run-clang-tidy-17 -quiet -header-filter '.*\.hpp' src 2>&1 \
+! run-clang-tidy-17 -quiet -header-filter '.*\.hpp' src 2>&1 \
   | grep -v '^clang-tidy\|^[0-9]\+ warnings generated'
 ```
 
