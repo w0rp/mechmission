@@ -1,4 +1,11 @@
-# mechmission
+# Mech Mission
+
+[![CI](https://img.shields.io/github/actions/workflow/status/w0rp/mechmission/ci.yml?branch=master&label=CI&logo=github&style=for-the-badge)](https://github.com/w0rp/mechmission/actions?query=event%3Apush+workflow%3ACI+branch%3Amaster++)
+
+Mech Mission is a FOSS turn-based strategy video game in the style of classic
+DOS and Windows 9x strategy titles.
+
+This project is very much a "work in progress."
 
 ## Build
 
@@ -18,7 +25,8 @@ Use `clangd` and make sure `clang-tidy-17` is installed to check code.
 Checks can be run on the whole project like so:
 
 ```
-run-clang-tidy-17 -header-filter '.*\.hpp' -quiet src
+run-clang-tidy-17 -quiet -header-filter '.*\.hpp' src 2>&1 \
+  | grep -v '^clang-tidy\|^[0-9]\+ warnings generated'
 ```
 
 ## Build for release
