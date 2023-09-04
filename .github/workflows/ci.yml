@@ -1,0 +1,37 @@
+---
+name: CI
+
+on:  # yamllint disable-line rule:truthy
+  push:
+    branches:
+      - '**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Pull Docker base image
+        run: docker pull xianpengshen/clang-tools:16
+
+      - name: Cache Docker base image
+        uses: actions/cache@v3
+        with:
+          path: /var/lib/docker
+          key: "${{ runner.os }}-build"
+
+      - name: Build Docker image
+        run: docker build -t mechmission-tests:latest -f test/Dockerfile  .
+
+      - name: Run make
+        run: docker run mechmission-tests:latest make
+
+      - name: Run clang-tidy
+        # Run clang-tidy even if the build fails.
+        if: success() || failure()
+        run: docker run mechmission-tests:latest sh -c '! run-clang-tidy-16 -quiet -header-filter ".*\\.hpp" src 2>&1 | grep -v "^clang-tidy\\|^[0-9]\\+ warnings generated"'  # yamllint disable-line rule:line-length

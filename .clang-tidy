@@ -1,12 +1,6 @@
 ---
 Checks: 'clang-diagnostic-*,clang-analyzer-*,cppcoreguidelines-*,-cppcoreguidelines-avoid-magic-numbers,-cppcoreguidelines-pro-type-union-access,-cppcoreguidelines-pro-type-vararg'
 WarningsAsErrors: ''
-HeaderFileExtensions:
-  - h
-  - hpp
-ImplementationFileExtensions:
-  - c
-  - cpp
 HeaderFilterRegex: ''
 AnalyzeTemporaryDtors: false
 FormatStyle:     none
@@ -24,6 +18,5 @@ CheckOptions:
   llvm-qualified-auto.AddConstToQualified: 'false'
   llvm-else-after-return.WarnOnConditionVariables: 'false'
   cert-oop54-cpp.WarnOnlyIfThisHasSuspiciousField: 'false'
-SystemHeaders:   false
 ...
 
