@@ -23,11 +23,11 @@ namespace curses {
 
         const Window& main_window() const override;
         void resize() override;
-        virtual const std::vector<GameAction> handle_input(
+        const std::vector<GameAction> handle_input(
             const GameState& game_state,
             curses::Input input
         ) override;
-        virtual void render(const GameState& game_state) override;
+        void render(const GameState& game_state) override;
     };
 }
 

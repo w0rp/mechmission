@@ -33,7 +33,8 @@ namespace curses {
         _hud(0, 0, HUD_WIDTH, curses::screen_height()),
         _field(HUD_WIDTH, 0, curses::screen_width() - HUD_WIDTH, curses::screen_height()),
         _movement_path(),
-        _movement_spaces()
+        _movement_spaces(),
+        _selected_entity(entt::null)
     {
     }
 

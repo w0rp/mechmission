@@ -17,6 +17,9 @@ namespace curses {
         // Disable copying and assignment.
         WindowGroup(const WindowGroup&) = delete;
         WindowGroup& operator=(const WindowGroup&) = delete;
+        // Explicitly use default moves.
+        WindowGroup(WindowGroup&&) = default;
+        WindowGroup& operator=(WindowGroup&&) = default;
 
         virtual const Window& main_window() const = 0;
         virtual void resize() = 0;

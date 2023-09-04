@@ -12,16 +12,16 @@ namespace curses {
 
     Window::Window(const Window& parent, int x, int y, int width, int height) noexcept:
         _parent_window(parent._window),
-        _window{derwin((WINDOW*)_parent_window, height, width, y, x)}
+        _window{derwin(_parent_window, height, width, y, x)}
     {
     }
 
     Window::~Window() {
-        delwin((WINDOW*)_window);
+        delwin(_window);
     }
 
     void Window::resize(int x, int y, int width, int height) noexcept {
-        wresize((WINDOW*)_window, height, width);
+        wresize(_window, height, width);
 
         if (_parent_window) {
             // mvderwin is supposed to move a window inside of a parent
@@ -30,51 +30,51 @@ namespace curses {
             //
             // This doesn't account for grandchild windows.
             mvwin(
-                (WINDOW*)_window,
-                y + getbegy((WINDOW*)_parent_window),
-                x + getbegx((WINDOW*)_parent_window)
+                _window,
+                y + getbegy(_parent_window),
+                x + getbegx(_parent_window)
             );
         } else {
-            mvwin((WINDOW*)_window, y, x);
+            mvwin(_window, y, x);
         }
     }
 
     int Window::x() const noexcept {
-       return getbegx((WINDOW*)_window);
+       return getbegx(_window);
     }
 
     int Window::y() const noexcept {
-       return getbegy((WINDOW*)_window);
+       return getbegy(_window);
     }
 
     int Window::width() const noexcept {
-       return getmaxx((WINDOW*)_window);
+       return getmaxx(_window);
     }
 
     int Window::height() const noexcept {
-       return getmaxy((WINDOW*)_window);
+       return getmaxy(_window);
     }
 
     void Window::position_cursor(int x, int y) noexcept {
-        wmove((WINDOW*)_window, y, x);
+        wmove(_window, y, x);
     }
 
     void Window::fill(curses::Color color) noexcept {
         // FIXME: We can't set other colours after we use this?
-        wbkgd((WINDOW*)_window, COLOR_PAIR(int(color)));
+        wbkgd(_window, COLOR_PAIR(int(color)));
     }
 
     void Window::color_on(curses::Color color) noexcept {
-        wattron((WINDOW*)_window, COLOR_PAIR(int(color)));
+        wattron(_window, COLOR_PAIR(int(color)));
     }
 
     void Window::color_off(curses::Color color) noexcept {
-        wattroff((WINDOW*)_window, COLOR_PAIR(int(color)));
+        wattroff(_window, COLOR_PAIR(int(color)));
     }
 
     void Window::draw(int x, int y, char chr) noexcept {
-        wmove((WINDOW*)_window, y, x);
-        waddch((WINDOW*)_window, (unsigned int)chr);
+        wmove(_window, y, x);
+        waddch(_window, (unsigned int)chr);
     }
 
     void Window::draw(curses::Color color, int x, int y, char chr) noexcept {
@@ -96,17 +96,23 @@ namespace curses {
     void Window::drawf(int x, int y, const char* fmt, ...) noexcept {
         wmove((WINDOW*)_window, y, x);
         va_list args;
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
         va_start(args, fmt);
-        vw_printw((WINDOW*)_window, fmt, args);
-        va_end(args);
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+        vw_printw(_window, fmt, args);
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+        va_end(args); // NOLINT
     }
 
     void Window::drawf(curses::Color color, int x, int y, const char* fmt, ...) noexcept {
         color_on(color);
-        wmove((WINDOW*)_window, y, x);
+        wmove(_window, y, x);
         va_list args;
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
         va_start(args, fmt);
-        vw_printw((WINDOW*)_window, fmt, args);
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+        vw_printw(_window, fmt, args);
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
         va_end(args);
         color_off(color);
     }

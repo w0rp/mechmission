@@ -52,7 +52,6 @@ struct ConfirmationWindowGroup::Impl {
         },
         _message(message),
         _ok_text(ok_text),
-        _ok(false),
         _ok_action(ok_action)
     {}
 

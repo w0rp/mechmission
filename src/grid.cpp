@@ -10,20 +10,20 @@ std::ostream& operator<<(std::ostream& os, const Space& s) {
 
 // Compute the index for storing a space in the _spaces vector.
 // Credit to /u/GavrielBA on Reddit.
-int grid_index(int radius, int rhombus_size, int x, int y) {
+size_t grid_index(int radius, int rhombus_size, int x, int y) {
     // The z-coordinate for cube hex coordinates.
     int z = -x - y;
 
     if (x >= 0 && y < 0) {
-        return x * radius - y;
+        return size_t(x * radius - y);
     }
 
     if (y >= 0 && z < 0) {
-        return rhombus_size + y * radius - z;
+        return size_t(rhombus_size + y * radius - z);
     }
 
     if (z >= 0 && x < 0) {
-        return rhombus_size * 2 + z * radius - x;
+        return size_t(rhombus_size * 2 + z * radius - x);
     }
 
     return 0;
@@ -38,7 +38,7 @@ Grid::Grid():
 Grid::Grid(int radius):
     _radius(radius),
     _rhombus_size(radius * (radius + 1)),
-    _spaces(1 + _rhombus_size * 3)
+    _spaces(size_t(1 + _rhombus_size * 3))
     {}
 
 int Grid::radius() const {

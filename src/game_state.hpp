@@ -5,29 +5,31 @@
 
 #include "grid.hpp"
 
-struct GameStateMapParameters {
-    const Grid& grid;
-    const Point& grid_pos;
-    int turn_number;
-    int player_number;
-    int players;
-};
-
 class GameState {
     entt::registry _registry;
     Grid _grid;
     Point _grid_pos;
-    int _turn_number;
-    int _player_number;
-    int _players;
+    int _turn_number = 1;
+    int _player_number = 1;
+    int _players = 1;
 public:
     // Disable copying and assignment.
     GameState(const GameState&) = delete;
     GameState& operator=(const GameState&) = delete;
+    // Explicitly use default moves.
+    GameState(GameState&&) = default;
+    GameState& operator=(GameState&&) = default;
 
     GameState();
+    ~GameState() = default;
 
-    void open_map(const GameStateMapParameters& params);
+    void open_map(
+        const Grid& grid,
+        const Point& grid_pos,
+        int turn_number,
+        int player_number,
+        int players
+    );
     entt::registry& registry();
     const entt::registry& registry() const;
     Grid& grid();

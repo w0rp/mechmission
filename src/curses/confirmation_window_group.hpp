@@ -8,11 +8,13 @@ namespace curses {
         // NOTE: The lifetime of the parent window is assumed to be greater
         // than the confirmation window. The reference will be dangling if
         // the parent window is destroyed before the confirmation window.
+        //
+        // NOLINTNEXTLINE(cppcoreguidelines-avoid-const-or-ref-data-members)
         const Window& _parent_window;
         Window _popup;
         const char* _message;
         const char* _ok_text;
-        bool _ok;
+        bool _ok = false;
         GameAction _ok_action;
 
         // A forward declaration to private implementation details.

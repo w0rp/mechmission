@@ -3,6 +3,7 @@
 #include <ncurses.h>
 
 namespace curses {
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
     MousePosition last_mouse_position;
 
     Input get_input() noexcept {

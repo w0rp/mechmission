@@ -3,17 +3,21 @@
 GameState::GameState():
     _registry(),
     _grid(),
-    _turn_number(1),
-    _player_number(1),
-    _players(1)
+    _grid_pos{}
 {}
 
-void GameState::open_map(const GameStateMapParameters& params) {
-    _grid = params.grid;
-    _grid_pos = params.grid_pos;
-    _turn_number = params.turn_number;
-    _player_number = params.player_number;
-    _players = params.players;
+void GameState::open_map(
+    const Grid& grid,
+    const Point& grid_pos,
+    int turn_number,
+    int player_number,
+    int players
+) {
+    _grid = grid;
+    _grid_pos = grid_pos;
+    _turn_number = turn_number;
+    _player_number = player_number;
+    _players = players;
 }
 
 entt::registry& GameState::registry() {

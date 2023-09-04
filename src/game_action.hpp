@@ -20,15 +20,15 @@ enum class GameActionTag {
 };
 
 class GameAction {
-public:
-    const GameActionTag tag;
-private:
+    GameActionTag _tag;
     union {
         Point _point;
     };
 public:
     // You should not be able to default construct a tag.
     GameAction() = delete;
+
+    GameActionTag tag() const;
 
     GameAction(GameActionTag new_tag);
     GameAction(GameActionTag new_tag, const Point& point);

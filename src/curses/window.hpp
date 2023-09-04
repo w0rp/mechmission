@@ -4,8 +4,10 @@
 // A copy of the PRINTFLIKE
 #ifndef GCC_PRINTFLIKE
 #ifndef printf
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define GCC_PRINTFLIKE(fmt,var) __attribute__((format(printf,fmt,var)))
 #else
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define GCC_PRINTFLIKE(fmt,var) /*nothing*/
 #endif
 #endif
@@ -13,15 +15,22 @@
 #include "color.hpp"
 #include "mouse_position.hpp"
 
+// Forward declare the WINDOW type from ncurses.
+typedef struct _win_st WINDOW;
+
 namespace curses {
     class Window {
-        void* _parent_window;
-        void* _window;
+        WINDOW* _parent_window;
+        WINDOW* _window;
     public:
         // Create a new window with coordinates on the screen.
         Window(int x, int y, int width, int height) noexcept;
         // Create a new child window with coordinates on the screen.
         Window(const Window& parent, int x, int y, int width, int height) noexcept;
+        // Explicitly use default moves.
+        Window(Window&&) = default;
+        Window& operator=(Window&&) = default;
+
         ~Window();
 
         // Disable copying and assignment.

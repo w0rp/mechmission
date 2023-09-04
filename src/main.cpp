@@ -32,8 +32,8 @@ class GameLoopHandler {
     GameState _game_state;
     MovementSystem _movement_system;
     TurnSystem _turn_system;
-    bool _resize_needed;
-    bool _should_quit;
+    bool _resize_needed = false;
+    bool _should_quit = false;
 
     void _nudge_cursor(const Vector& direction) {
         _movement_system.move_cursor(
@@ -45,7 +45,7 @@ class GameLoopHandler {
     void _handle_game_action(GameAction action) {
         auto& current_group = _window_group_stack.back();
 
-        switch(action.tag) {
+        switch(action.tag()) {
             case GameActionTag::battlefield_ask_quit:
                 _window_group_stack.emplace_back(
                     std::make_unique<curses::ConfirmationWindowGroup>(
@@ -117,9 +117,7 @@ public:
         _window_group_stack(),
         _game_state(),
         _movement_system(),
-        _turn_system(),
-        _resize_needed(false),
-        _should_quit(false)
+        _turn_system()
     {}
 
     bool should_quit() const noexcept {
@@ -128,13 +126,13 @@ public:
 
     void setup() {
         curses::start_ui();
-        _game_state.open_map({
-            .grid=Grid(5),
-            .grid_pos=Point(0, 0),
-            .turn_number=1,
-            .player_number=1,
-            .players=2,
-        });
+        _game_state.open_map(
+            Grid(5),
+            Point(0, 0),
+            1, // turn_number
+            1, // player_number
+            2 // players
+        );
 
         Armor basic_armor{
             {
@@ -305,7 +303,7 @@ public:
     }
 
     void update(double dt) {
-        curses::Input input;
+        auto input = curses::Input::unknown;
 
         bool movement_busy = _movement_system.update(_game_state, dt);
 
