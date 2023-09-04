@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.17)
 project(mechmission)
 
+if(NOT CMAKE_BUILD_TYPE)
+    message(STATUS "Setting build type to Release by default")
+    set(CMAKE_BUILD_TYPE Release)
+endif()
+
 add_subdirectory(lib/entt)
 
 # Require curses.
@@ -13,12 +18,14 @@ file(GLOB_RECURSE SOURCES RELATIVE ${CMAKE_SOURCE_DIR} "src/*.cpp")
 # Set the C++ standard and compiler options.
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_FLAGS "\
--O3 -Wall -Wextra \
+-Wall -Wextra \
 -Wshadow \
 -Wno-unused-parameter \
 -Wimplicit-fallthrough \
 -Wconversion \
 ")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+set(CMAKE_CXX_FLAGS_DEBUG "-Og -ggdb")
 
 # Generate compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
