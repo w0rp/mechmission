@@ -2,15 +2,20 @@ cmake_minimum_required(VERSION 3.17)
 project(mechmission)
 
 if(NOT CMAKE_BUILD_TYPE)
-    message(STATUS "Setting build type to Release by default")
-    set(CMAKE_BUILD_TYPE Release)
+  message(STATUS "Setting build type to Release by default")
+  set(CMAKE_BUILD_TYPE Release)
 endif()
+
+if(NOT CMAKE_BUILD_TYPE MATCHES "Debug|Release")
+  message(FATAL_ERROR "CMAKE_BUILD_TYPE must be Debug or Release")
+endif()
+
+message(STATUS "Building with -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
 
 add_subdirectory(lib/entt)
 
 # Require curses.
 find_package(Curses REQUIRED)
-# find_package(EnTT REQUIRED)
 
 # Find every .cpp file to compile them all.
 file(GLOB_RECURSE SOURCES RELATIVE ${CMAKE_SOURCE_DIR} "src/*.cpp")
