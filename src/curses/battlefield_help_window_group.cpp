@@ -17,7 +17,7 @@ namespace curses {
         _help_window.clear();
     }
 
-    const std::vector<GameAction> BattlefieldHelpWindowGroup::handle_input(
+    const GameActionArray BattlefieldHelpWindowGroup::handle_input(
         const GameState& game_state,
         curses::Input input
     ) {

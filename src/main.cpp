@@ -326,7 +326,13 @@ public:
                 auto action: _window_group_stack.back()
                     ->handle_input(_game_state, input)
             ) {
-                _handle_game_action(action);
+                if (action.tag() == GameActionTag::none) [[likely]] {
+                    // Stop processing on the first nothing action,
+                    // meaning we reached the end of actions.
+                    break;
+                } else {
+                    _handle_game_action(action);
+                }
             }
         }
     }

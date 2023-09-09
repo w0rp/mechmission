@@ -11,7 +11,7 @@ namespace curses {
 
         const Window& main_window() const override;
         void resize() override;
-        const std::vector<GameAction> handle_input(
+        const GameActionArray handle_input(
             const GameState& game_state,
             curses::Input input
         ) override;

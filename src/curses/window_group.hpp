@@ -1,7 +1,7 @@
 #ifndef __MECHMISSION_CURSES_WINDOW_GROUP_H_
 #define __MECHMISSION_CURSES_WINDOW_GROUP_H_
 
-#include <vector>
+#include <array>
 
 #include "../game_action.hpp"
 #include "../game_state.hpp"
@@ -9,6 +9,9 @@
 #include "window.hpp"
 
 namespace curses {
+    static constexpr int max_game_actions = 4;
+    using GameActionArray = std::array<GameAction, max_game_actions>;
+
     class WindowGroup {
     public:
         WindowGroup() {}
@@ -23,7 +26,7 @@ namespace curses {
 
         virtual const Window& main_window() const = 0;
         virtual void resize() = 0;
-        virtual const std::vector<GameAction> handle_input(
+        virtual const GameActionArray handle_input(
             const GameState& game_state,
             curses::Input input
         ) = 0;

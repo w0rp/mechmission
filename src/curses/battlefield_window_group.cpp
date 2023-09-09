@@ -204,7 +204,7 @@ struct BattlefieldWindowGroup::Impl {
         group._field.refresh();
     }
 
-    static std::vector<GameAction> _get_mouse_selection_action(
+    static GameActionArray _get_mouse_selection_action(
         BattlefieldWindowGroup& group,
         const GameState& game_state
     ) {
@@ -229,7 +229,9 @@ struct BattlefieldWindowGroup::Impl {
             );
 
             if (grid.contains(draw_point)) {
-                return {{GameActionTag::battlefield_select_point, draw_point}};
+                return {
+                    GameAction(GameActionTag::battlefield_select_point, draw_point),
+                };
             }
         }
 
@@ -253,7 +255,7 @@ struct BattlefieldWindowGroup::Impl {
         _hud.draw_borders();
     }
 
-    const std::vector<GameAction> BattlefieldWindowGroup::handle_input(
+    const GameActionArray BattlefieldWindowGroup::handle_input(
         const GameState& game_state,
         curses::Input input
     ) {

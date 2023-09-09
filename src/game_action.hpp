@@ -25,9 +25,7 @@ class GameAction {
         Point _point;
     };
 public:
-    // You should not be able to default construct a tag.
-    GameAction() = delete;
-
+    GameAction();
     GameActionTag tag() const;
 
     GameAction(GameActionTag new_tag);

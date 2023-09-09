@@ -11,7 +11,7 @@ namespace curses {
 
 // Implementation details.
 struct ConfirmationWindowGroup::Impl {
-    static std::vector<GameAction> _get_mouse_selection_action(
+    static GameActionArray _get_mouse_selection_action(
         ConfirmationWindowGroup& group
     ) {
         auto [x, y] = group._popup.get_mouse_position();
@@ -68,7 +68,7 @@ struct ConfirmationWindowGroup::Impl {
         );
     }
 
-    const std::vector<GameAction> ConfirmationWindowGroup::handle_input(
+    const GameActionArray ConfirmationWindowGroup::handle_input(
         const GameState& game_state,
         curses::Input input
     ) {
