@@ -13,9 +13,6 @@ struct Space {
 std::ostream& operator<<(std::ostream& os, const Space& s);
 
 class Grid {
-    int _radius;
-    int _rhombus_size;
-    std::vector<Space> _spaces;
 public:
     Grid();
     Grid(int radius);
@@ -31,6 +28,10 @@ public:
     //
     // throws std::out_of_range if the point is not in the grid.
     const Space& at(const Point& p) const;
+private:
+    int _radius;
+    int _rhombus_size;
+    std::vector<Space> _spaces;
 };
 
 #endif

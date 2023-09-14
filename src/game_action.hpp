@@ -20,10 +20,6 @@ enum class GameActionTag {
 };
 
 class GameAction {
-    GameActionTag _tag;
-    union {
-        Point _point;
-    };
 public:
     GameAction();
     GameActionTag tag() const;
@@ -32,6 +28,11 @@ public:
     GameAction(GameActionTag new_tag, const Point& point);
 
     const Point& point() const;
+private:
+    GameActionTag _tag;
+    union {
+        Point _point;
+    };
 };
 
 #endif

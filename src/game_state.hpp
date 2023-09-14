@@ -6,12 +6,6 @@
 #include "grid.hpp"
 
 class GameState {
-    entt::registry _registry;
-    Grid _grid;
-    Point _grid_pos;
-    int _turn_number = 1;
-    int _player_number = 1;
-    int _players = 1;
 public:
     // Disable copying and assignment.
     GameState(const GameState&) = delete;
@@ -48,6 +42,13 @@ public:
     void set_player_number(int player_number);
     // Get the number of players.
     int players() const;
+private:
+    entt::registry _registry;
+    Grid _grid;
+    Point _grid_pos;
+    int _turn_number = 1;
+    int _player_number = 1;
+    int _players = 1;
 };
 
 #endif

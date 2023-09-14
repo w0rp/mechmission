@@ -5,7 +5,6 @@
 
 namespace curses {
     class BattlefieldHelpWindowGroup: public WindowGroup {
-        Window _help_window;
     public:
         BattlefieldHelpWindowGroup();
 
@@ -16,6 +15,8 @@ namespace curses {
             curses::Input input
         ) override;
         void render(const GameState& game_state) override;
+    private:
+        Window _help_window;
     };
 }
 

@@ -10,14 +10,6 @@
 
 namespace curses {
     class BattlefieldWindowGroup final: public WindowGroup {
-        Window _hud;
-        Window _field;
-        std::vector<Point> _movement_path;
-        std::set<Point> _movement_spaces;
-        entt::entity _selected_entity;
-
-        // A forward declaration to private implementation details.
-        struct Impl;
     public:
         BattlefieldWindowGroup(const Point& field_pos) noexcept;
 
@@ -28,6 +20,15 @@ namespace curses {
             curses::Input input
         ) override;
         void render(const GameState& game_state) override;
+    private:
+        // A forward declaration to private implementation details.
+        struct Impl;
+
+        Window _hud;
+        Window _field;
+        std::vector<Point> _movement_path;
+        std::set<Point> _movement_spaces;
+        entt::entity _selected_entity;
     };
 }
 
