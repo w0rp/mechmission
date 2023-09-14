@@ -4,6 +4,7 @@
 #include "components/point.hpp"
 #include <exception>
 #include <variant>
+#include <array>
 
 enum class GameActionTag {
     none,
@@ -42,5 +43,8 @@ private:
     GameActionTag _tag;
     std::variant<Point> _data;
 };
+
+static constexpr int MAX_GAME_ACTIONS = 4;
+using GameActionArray = std::array<GameAction, MAX_GAME_ACTIONS>;
 
 #endif

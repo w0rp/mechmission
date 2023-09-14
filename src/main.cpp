@@ -1,10 +1,9 @@
 #include <chrono>
 #include <thread>
-#include <memory>
-
-#include <unistd.h>
+#include <variant>
 
 #include "curses/input.hpp"
+#include "curses/window.hpp"
 #include "game_action.hpp"
 #include "game_state.hpp"
 #include "movement_system.hpp"
@@ -12,7 +11,6 @@
 #include "components/point.hpp"
 #include "components/mech.hpp"
 #include "curses/screen.hpp"
-#include "curses/window_group.hpp"
 #include "curses/battlefield_window_group.hpp"
 #include "curses/battlefield_help_window_group.hpp"
 #include "curses/confirmation_window_group.hpp"
@@ -27,8 +25,54 @@ void create_unit(
     registry.emplace<Mech>(unit, mech);
 }
 
+// All possible window groups.
+using WindowGroup = std::variant<
+    curses::BattlefieldWindowGroup,
+    curses::BattlefieldHelpWindowGroup,
+    curses::ConfirmationWindowGroup
+>;
+
+// Get the main window of a WindowGroup.
+const curses::Window& get_main_window(WindowGroup& abstractWindowGroup) {
+    return std::visit(
+        [](auto&& group) -> auto&& { return group.main_window(); },
+        abstractWindowGroup
+    );
+}
+
+// Ask a WindowGroup to handle input.
+const GameActionArray handle_input(
+    WindowGroup& abstractWindowGroup,
+    const GameState& game_state,
+    curses::Input input
+) {
+    return std::visit(
+        [&](auto&& group) { return group.handle_input(game_state, input); },
+        abstractWindowGroup
+    );
+}
+
+// resize a WindowGroup.
+void resize(WindowGroup& windowGroup) {
+    std::visit(
+        [](auto&& group) { group.resize(); },
+        windowGroup
+    );
+}
+
+// render a WindowGroup.
+void render(
+    WindowGroup& windowGroup,
+    const GameState& game_state
+) {
+    std::visit(
+        [&](auto&& group) { group.render(game_state); },
+        windowGroup
+    );
+}
+
 class GameLoopHandler {
-    std::vector<std::unique_ptr<curses::WindowGroup>> _window_group_stack;
+    std::vector<WindowGroup> _window_group_stack;
     GameState _game_state;
     MovementSystem _movement_system;
     TurnSystem _turn_system;
@@ -48,8 +92,8 @@ class GameLoopHandler {
         switch(action.tag()) {
             case GameActionTag::battlefield_ask_quit:
                 _window_group_stack.emplace_back(
-                    std::make_unique<curses::ConfirmationWindowGroup>(
-                        current_group->main_window(),
+                    curses::ConfirmationWindowGroup(
+                        get_main_window(current_group),
                         "Quit game?",
                         "Quit",
                         GameActionTag::battlefield_quit
@@ -62,7 +106,7 @@ class GameLoopHandler {
                 return;
             case GameActionTag::battlefield_help:
                 _window_group_stack.emplace_back(
-                    std::make_unique<curses::BattlefieldHelpWindowGroup>()
+                    curses::BattlefieldHelpWindowGroup()
                 );
                 break;
             case GameActionTag::battlefield_move_up:
@@ -93,8 +137,8 @@ class GameLoopHandler {
                 break;
             case GameActionTag::battlefield_ask_end_turn:
                 _window_group_stack.emplace_back(
-                    std::make_unique<curses::ConfirmationWindowGroup>(
-                        current_group->main_window(),
+                    curses::ConfirmationWindowGroup(
+                        get_main_window(current_group),
                         "End turn?",
                         "End Turn",
                         GameActionTag::battlefield_end_turn
@@ -292,9 +336,7 @@ public:
 
         // Set up the battlefield window group to start.
         _window_group_stack.emplace_back(
-            std::make_unique<curses::BattlefieldWindowGroup>(
-                Point(0, 0)
-            )
+            curses::BattlefieldWindowGroup(Point(0, 0))
         );
     }
 
@@ -323,8 +365,11 @@ public:
 
             // Send input only to the window group at the end of the stack.
             for (
-                auto action: _window_group_stack.back()
-                    ->handle_input(_game_state, input)
+                auto action: handle_input(
+                    _window_group_stack.back(),
+                    _game_state,
+                    input
+                )
             ) {
                 if (action.tag() == GameActionTag::none) [[likely]] {
                     // Stop processing on the first nothing action,
@@ -343,7 +388,7 @@ public:
             curses::clear_ui();
 
             for (auto& window_group: _window_group_stack) {
-                window_group->resize();
+                resize(window_group);
             }
 
             _resize_needed = false;
@@ -353,7 +398,7 @@ public:
 
         // Render all window groups in order.
         for (auto& window_group: _window_group_stack) {
-            window_group->render(_game_state);
+            ::render(window_group, _game_state);
         }
     }
 };

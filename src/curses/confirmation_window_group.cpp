@@ -1,6 +1,5 @@
 #include "confirmation_window_group.hpp"
 #include "input.hpp"
-#include "window_group.hpp"
 #include "screen.hpp"
 
 #include <cstring>
@@ -41,7 +40,6 @@ struct ConfirmationWindowGroup::Impl {
         const char* ok_text,
         GameAction ok_action
     ):
-        WindowGroup(),
         _parent_window(parent_window),
         _popup{
             _parent_window,

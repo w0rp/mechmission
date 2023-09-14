@@ -1,10 +1,13 @@
 #ifndef __MECHMISSION_CURSES_CONFIRMATION_WINDOW_GROUP_H_
 #define __MECHMISSION_CURSES_CONFIRMATION_WINDOW_GROUP_H_
 
-#include "window_group.hpp"
+#include "window.hpp"
+#include "input.hpp"
+#include "../game_state.hpp"
+#include "../game_action.hpp"
 
 namespace curses {
-    class ConfirmationWindowGroup: public WindowGroup {
+    class ConfirmationWindowGroup {
     public:
         ConfirmationWindowGroup(
             const Window& parent_window,
@@ -13,13 +16,13 @@ namespace curses {
             GameAction ok_action
         );
 
-        const Window& main_window() const override;
-        void resize() override;
+        const Window& main_window() const;
+        void resize();
         const GameActionArray handle_input(
             const GameState& game_state,
             curses::Input input
-        ) override;
-        void render(const GameState& game_state) override;
+        );
+        void render(const GameState& game_state);
     private:
         // NOTE: The lifetime of the parent window is assumed to be greater
         // than the confirmation window. The reference will be dangling if

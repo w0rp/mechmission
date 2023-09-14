@@ -16,8 +16,18 @@ namespace curses {
     {
     }
 
+    Window::Window(Window&& other) noexcept:
+        _parent_window(other._parent_window),
+        _window(other._window)
+    {
+        other._parent_window = nullptr;
+        other._window = nullptr;
+    }
+
     Window::~Window() {
-        delwin(_window);
+        if (_window != nullptr) {
+            delwin(_window);
+        }
     }
 
     void Window::resize(int x, int y, int width, int height) noexcept {
@@ -122,7 +132,9 @@ namespace curses {
     }
 
     void Window::clear() noexcept {
-        wclear((WINDOW*)_window);
+        if (_window != nullptr) {
+            wclear((WINDOW*)_window);
+        }
     }
 
     void Window::refresh() noexcept {

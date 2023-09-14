@@ -4,22 +4,24 @@
 #include <set>
 #include <vector>
 
+#include "window.hpp"
+#include "input.hpp"
 #include "../components/point.hpp"
-
-#include "window_group.hpp"
+#include "../game_state.hpp"
+#include "../game_action.hpp"
 
 namespace curses {
-    class BattlefieldWindowGroup final: public WindowGroup {
+    class BattlefieldWindowGroup {
     public:
         BattlefieldWindowGroup(const Point& field_pos) noexcept;
 
-        const Window& main_window() const override;
-        void resize() override;
+        const Window& main_window() const;
+        void resize();
         const GameActionArray handle_input(
             const GameState& game_state,
             curses::Input input
-        ) override;
-        void render(const GameState& game_state) override;
+        );
+        void render(const GameState& game_state);
     private:
         // A forward declaration to private implementation details.
         struct Impl;

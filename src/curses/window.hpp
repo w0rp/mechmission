@@ -27,8 +27,9 @@ namespace curses {
         Window(int x, int y, int width, int height) noexcept;
         // Create a new child window with coordinates on the screen.
         Window(const Window& parent, int x, int y, int width, int height) noexcept;
-        // Explicitly use default moves.
-        Window(Window&&) = default;
+        // We need a move constructor to move WINDOW* so we don't delete them.
+        Window(Window&&) noexcept;
+        // Explicitly use default assignment
         Window& operator=(Window&&) = default;
 
         ~Window();
