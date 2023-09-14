@@ -2,6 +2,8 @@
 #define __MECHMISSION_GAME_ACTION_H_
 
 #include "components/point.hpp"
+#include <exception>
+#include <variant>
 
 enum class GameActionTag {
     none,
@@ -19,6 +21,14 @@ enum class GameActionTag {
     battlefield_help,
 };
 
+// An exception for when we create a GameAction with the wrong data.
+class InvalidGameActionTagDataException final : public std::exception {
+public:
+    InvalidGameActionTagDataException();
+
+    const char* what() const noexcept final;
+};
+
 class GameAction {
 public:
     GameAction();
@@ -30,9 +40,7 @@ public:
     const Point& point() const;
 private:
     GameActionTag _tag;
-    union {
-        Point _point;
-    };
+    std::variant<Point> _data;
 };
 
 #endif

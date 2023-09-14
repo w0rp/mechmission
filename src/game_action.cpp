@@ -2,6 +2,12 @@
 
 #include <cassert>
 
+InvalidGameActionTagDataException::InvalidGameActionTagDataException() {}
+
+const char* InvalidGameActionTagDataException::what() const noexcept {
+    return "Invalid GameActionTag value: call another constructor";
+}
+
 inline void assert_has_point(GameActionTag tag) {
     assert(tag == GameActionTag::battlefield_select_point);
 }
@@ -11,19 +17,30 @@ inline void assert_has_no_point(GameActionTag tag) {
 }
 
 // Zero-initialize with no action by default.
-GameAction::GameAction(): _tag(GameActionTag::none), _point{} {}
+GameAction::GameAction(): _tag(GameActionTag::none), _data{} {}
 
 // Init the action with a tag and the largest data for the union.
-GameAction::GameAction(GameActionTag new_tag): _tag(new_tag), _point{} {
-    // Do not allow tags requiring data to be set without the data.
-    assert_has_no_point(new_tag);
+GameAction::GameAction(GameActionTag new_tag): _tag(new_tag), _data{} {
+    // Ensure we call this constructor with the correct tags only.
+    switch (new_tag) {
+    case GameActionTag::battlefield_select_point:
+        throw InvalidGameActionTagDataException();
+    default:
+        break;
+    }
 }
 
 GameAction::GameAction(GameActionTag new_tag, const Point& point):
     _tag(new_tag),
-    _point{point}
+    _data{point}
 {
-    assert_has_point(new_tag);
+    // Ensure we call this constructor with the correct tags only.
+    switch (new_tag) {
+    case GameActionTag::battlefield_select_point:
+        break;
+    default:
+        throw InvalidGameActionTagDataException();
+    }
 }
 
 GameActionTag GameAction::tag() const {
@@ -31,7 +48,5 @@ GameActionTag GameAction::tag() const {
 }
 
 const Point& GameAction::point() const {
-    assert_has_point(_tag);
-
-    return _point;
+    return std::get<Point>(_data);
 }
